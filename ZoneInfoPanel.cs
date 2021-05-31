@@ -66,13 +66,66 @@ namespace ZoneInfo
         }
 
         /// <summary>
-        /// hold the 3 counts for a data row
+        /// hold the info for a data row
         /// </summary>
         private class SquareCount
         {
-            public int Built;   // number of built squares
-            public int Empty;   // number of empty squares
-            public int Total => Built + Empty;
+            // +1 to make room for entry for Entire City
+            private const int ArraySize = DistrictManager.MAX_DISTRICT_COUNT + 1;
+
+            // the 3 counts for a data row
+            // index into each array is district ID
+            public int[] Built = new int[ArraySize];
+            public int[] Empty = new int[ArraySize];
+            public int[] Total = new int[ArraySize];
+
+            /// <summary>
+            /// increment the counts for the specified district and for the Entire City
+            /// </summary>
+            public void Increment(byte districtID, bool occupied)
+            {
+                // increment either Built or Empty depending on the occupied flag
+                if (occupied)
+                {
+                    Built[districtID]++;
+                    Built[DistrictDropdown.DistrictIDEntireCity]++;
+                }
+                else
+                {
+                    Empty[districtID]++;
+                    Empty[DistrictDropdown.DistrictIDEntireCity]++;
+                }
+
+                // always increment the total
+                Total[districtID]++;
+                Total[DistrictDropdown.DistrictIDEntireCity]++;
+            }
+
+            /// <summary>
+            /// copy the data from another SquareCount to this one
+            /// </summary>
+            public void Copy(SquareCount from)
+            {
+                for (int districtID = 0; districtID < ArraySize; districtID++)
+                {
+                    Built[districtID] = from.Built[districtID];
+                    Empty[districtID] = from.Empty[districtID];
+                    Total[districtID] = from.Total[districtID];
+                }
+            }
+
+            /// <summary>
+            /// reset the counts for all districts
+            /// </summary>
+            public void Reset()
+            {
+                for (int districtID = 0; districtID < ArraySize; districtID++)
+                {
+                    Built[districtID] = 0;
+                    Empty[districtID] = 0;
+                    Total[districtID] = 0;
+                }
+            }
         }
 
         // define two square count arrays:
@@ -82,11 +135,10 @@ namespace ZoneInfo
         private SquareCount[] _squareCountFinal;
 
         /// <summary>
-        /// the UI elements to display a SquareCount
+        /// the UI elements to display a SquareCount in a row
         /// </summary>
         private class SquareCountUI
         {
-            // the UI elements to display a square count in a row
             public UISprite Symbol;
             public UILabel DescriptionLabel;
             public UILabel BuiltLabel;
@@ -96,12 +148,20 @@ namespace ZoneInfo
         private SquareCountUI[] _squareCountUI;
 
         // other UI elements
+        private DistrictDropdown _district;
         private SquareCountUI _heading;
         private UISprite _countCheckbox;
         private UILabel  _countLabel;
         private UISprite _percentCheckbox;
         private UILabel  _percentLabel;
         private UIFont _defaultFont;
+
+        // common UI properties
+        private const float DistrictHeight = 45f;
+        private const float LeftPadding = 8f;
+        private const float ItemHeight = 17f;
+        private readonly Color32 TextColor = new Color32(185, 221, 254, 255);
+        private const float TextScale = 0.75f;
 
         // size of one side of a square
         const float SquareSize = 8f;
@@ -170,8 +230,28 @@ namespace ZoneInfo
                     return;
                 }
 
+                // add district dropdown
+                _district = AddUIComponent<DistrictDropdown>();
+                if (_district == null || !_district.initialized)
+                {
+                    Debug.LogError($"Unable to create district dropdown on panel [{name}].");
+                    return;
+                }
+                _district.name = "DistrictPanel";
+                _district.text = "District:";
+                _district.relativePosition = new Vector3(LeftPadding, 45f);
+                _district.dropdownHeight = ItemHeight + 7f;
+                _district.font = _defaultFont;
+                _district.textScale = TextScale;
+                _district.textColor = TextColor;
+                _district.listHeight = 10 * (int)ItemHeight + 8;
+                _district.itemHeight = (int)ItemHeight;
+                _district.builtinKeyNavigation = true;
+                _district.eventSelectedDistrictChanged += SelectedDistrictChanged;
+
                 // create heading row
-                float top = 50f;    // just below title bar of panel
+                float top = 50f;            // start just below title bar of panel
+                top += DistrictHeight;      // skip over district dropdown
                 _heading = new SquareCountUI();
                 if (!CreateSquareCount(true, ref top, ingameAtlas, "", "Heading", "", _heading)) return;
                 _heading.BuiltLabel.text = "Built";
@@ -185,6 +265,20 @@ namespace ZoneInfo
                 if (!CreateLine(_heading.BuiltLabel)) return;
                 if (!CreateLine(_heading.EmptyLabel)) return;
                 if (!CreateLine(_heading.TotalLabel)) return;
+
+                // create two checkboxes left of the heading
+                if (!CreateCheckbox(ref _countCheckbox, ref _countLabel, "Count", 16f, 50f)) return;
+                if (!CreateCheckbox(ref _percentCheckbox, ref _percentLabel, "Percent", _countLabel.relativePosition.x + _countLabel.size.x + LeftPadding, 70f)) return;
+
+                // initialize check boxes so that Count is checked by default
+                SetCheckBox(_countCheckbox, true);
+                SetCheckBox(_percentCheckbox, false);
+
+                // set event handlers for count and percent
+                _countCheckbox.eventClicked   += CheckBox_eventClicked;
+                _countLabel.eventClicked      += CheckBox_eventClicked;
+                _percentCheckbox.eventClicked += CheckBox_eventClicked;
+                _percentLabel.eventClicked    += CheckBox_eventClicked;
 
                 // create a square count for each SquareType
                 _squareCountTemp  = new SquareCount  [SquareType.Count];
@@ -242,8 +336,7 @@ namespace ZoneInfo
                 size = new Vector3(
                     totalRow.TotalLabel.relativePosition.x + totalRow.TotalLabel.size.x + totalRow.Symbol.relativePosition.x,
                     totalRow.TotalLabel.relativePosition.y + totalRow.TotalLabel.size.y + 5f);
-                
-                // UI elements in the title bar are created on the drag handle instead of on the panel
+                _district.size = new Vector2(width - 2f * LeftPadding, DistrictHeight);
 
                 // create icon in upper left
                 UISprite panelIcon = AddUIComponent<UISprite>();
@@ -313,20 +406,6 @@ namespace ZoneInfo
                 dragHandle.BringToFront();
                 closeButton.BringToFront();
 
-                // create two checkboxes
-                if (!CreateCheckbox(ref _countCheckbox,   ref _countLabel,   "Count",   16f,                                                      50f)) return;
-                if (!CreateCheckbox(ref _percentCheckbox, ref _percentLabel, "Percent", _countLabel.relativePosition.x + _countLabel.size.x + 8f, 70f)) return;
-
-                // initialize check boxes so that Count is checked by default
-                SetCheckBox(_countCheckbox,   true );
-                SetCheckBox(_percentCheckbox, false);
-
-                // set event handlers for count and percent
-                _countCheckbox.eventClicked   += CheckBox_eventClicked;
-                _countLabel.eventClicked      += CheckBox_eventClicked;
-                _percentCheckbox.eventClicked += CheckBox_eventClicked;
-                _percentLabel.eventClicked    += CheckBox_eventClicked;
-
                 // update loop is not stopped
                 _stopUpdate = false;
             }
@@ -347,9 +426,6 @@ namespace ZoneInfo
                 return true;
             }
 
-            // common attributes
-            const float ItemHeight = 17f;
-
             // add the symbol sprite
             squareCountUI.Symbol = AddUIComponent<UISprite>();
             if (squareCountUI.Symbol == null)
@@ -360,7 +436,7 @@ namespace ZoneInfo
             squareCountUI.Symbol.name = namePrefix + "Symbol";
             squareCountUI.Symbol.autoSize = false;
             squareCountUI.Symbol.size = new Vector2(ItemHeight, ItemHeight);    // width is same as height
-            squareCountUI.Symbol.relativePosition = new Vector3(8f, top - 2f);  // -2 to align properly with text in labels
+            squareCountUI.Symbol.relativePosition = new Vector3(LeftPadding, top - 2f);  // -2 to align properly with text in labels
             squareCountUI.Symbol.atlas = atlas;
             squareCountUI.Symbol.spriteName = spriteName;
             squareCountUI.Symbol.isVisible = true;
@@ -397,8 +473,8 @@ namespace ZoneInfo
             label.text = text;
             label.textAlignment = UIHorizontalAlignment.Right;
             label.verticalAlignment = UIVerticalAlignment.Middle;
-            label.textScale = 0.75f; ;
-            label.textColor = new Color32(185, 221, 254, 255);
+            label.textScale = TextScale;
+            label.textColor = TextColor;
             label.autoSize = false;
             label.size = new Vector2(width, height);
             label.relativePosition = new Vector3(priorComponent.relativePosition.x + priorComponent.size.x + 4f, top);
@@ -425,7 +501,7 @@ namespace ZoneInfo
             line.size = new Vector2(label.width, 1f);
             line.relativePosition = new Vector3(1f, label.size.y);
             line.spriteName = "EmptySprite";
-            line.color = label.textColor;
+            line.color = TextColor;
             line.isVisible = true;
             
             // success
@@ -450,7 +526,7 @@ namespace ZoneInfo
             checkbox.relativePosition = new Vector3(x, _heading.Symbol.relativePosition.y);
             checkbox.isVisible = true;
 
-            // create count label for check box
+            // create label for check box
             label = AddUIComponent<UILabel>();
             if (label == null)
             {
@@ -462,8 +538,8 @@ namespace ZoneInfo
             label.text = text;
             label.textAlignment = UIHorizontalAlignment.Left;
             label.verticalAlignment = UIVerticalAlignment.Middle;
-            label.textScale = _heading.DescriptionLabel.textScale;
-            label.textColor = _heading.DescriptionLabel.textColor;
+            label.textScale = TextScale;
+            label.textColor = TextColor;
             label.autoSize = false;
             label.size = new Vector2(width, _heading.DescriptionLabel.size.y);
             label.relativePosition = new Vector3(checkbox.relativePosition.x + checkbox.size.x + 4f, _heading.DescriptionLabel.relativePosition.y);
@@ -471,6 +547,15 @@ namespace ZoneInfo
 
             // success
             return true;
+        }
+
+        /// <summary>
+        /// handle change in selected district
+        /// </summary>
+        private void SelectedDistrictChanged(object sender, SelectedDistrictChangedEventArgs eventParam)
+        {
+            // redisplay counts
+            _displayCounts = true;
         }
 
         /// <summary>
@@ -762,10 +847,10 @@ namespace ZoneInfo
                                             break;
                                     }
 
-                                    // increment the square counts
-                                    IncrementSquareCount(countToIncrement,    occupied);
-                                    IncrementSquareCount(subtotalToIncrement, occupied);
-                                    IncrementSquareCount(SquareType.Total,    occupied);    // always increment total
+                                    // increment the square count (if valid), subtotal (if valid), and total (always)
+                                    if (SquareType.IsValid(countToIncrement   )) _squareCountTemp[countToIncrement   ].Increment(districtID, occupied);
+                                    if (SquareType.IsValid(subtotalToIncrement)) _squareCountTemp[subtotalToIncrement].Increment(districtID, occupied);
+                                                                                 _squareCountTemp[SquareType.Total   ].Increment(districtID, occupied);
                                 }
                             }
                         }
@@ -778,8 +863,7 @@ namespace ZoneInfo
                     // copy temp to final
                     for (int squareType = 0; squareType < SquareType.Count; squareType++)
                     {
-                        _squareCountFinal[squareType].Built = _squareCountTemp[squareType].Built;
-                        _squareCountFinal[squareType].Empty = _squareCountTemp[squareType].Empty;
+                        _squareCountFinal[squareType].Copy(_squareCountTemp[squareType]);
                     }
 
                     // display square counts
@@ -798,26 +882,6 @@ namespace ZoneInfo
             catch (Exception ex)
             {
                 Debug.LogException(ex);
-            }
-        }
-
-        /// <summary>
-        /// increment the square count
-        /// </summary>
-        private void IncrementSquareCount(int squareType, bool occupied)
-        {
-            // only increment if square type is valid
-            if (SquareType.IsValid(squareType))
-            {
-                // increment either Built or Empty depending on the occupied flag
-                if (occupied)
-                {
-                    _squareCountTemp[squareType].Built++;
-                }
-                else
-                {
-                    _squareCountTemp[squareType].Empty++;
-                }
             }
         }
 
@@ -928,20 +992,21 @@ namespace ZoneInfo
             // get whether or not to format as percent
             bool formatAsPercent = IsCheckBoxChecked(_percentCheckbox);
 
-            // get totals
+            // get totals for the selected district
+            int selectedDistrict = _district.selectedDistrictID;
             SquareCount totalSquareCount = _squareCountFinal[SquareType.Total];
-            int totalBuilt = totalSquareCount.Built;
-            int totalEmpty = totalSquareCount.Empty;
-            int totalTotal = totalSquareCount.Total;
+            int totalBuilt = totalSquareCount.Built[selectedDistrict];
+            int totalEmpty = totalSquareCount.Empty[selectedDistrict];
+            int totalTotal = totalSquareCount.Total[selectedDistrict];
 
-            // display each square count
+            // display each square count for the selected district
             for (int squareType = 0; squareType < SquareType.Count; squareType++)
             {
                 SquareCountUI countUI = _squareCountUI[squareType];
                 SquareCount finalSquareCount = _squareCountFinal[squareType];
-                if (countUI.BuiltLabel != null) countUI.BuiltLabel.text = FormatValue(formatAsPercent, finalSquareCount.Built, totalBuilt);
-                if (countUI.EmptyLabel != null) countUI.EmptyLabel.text = FormatValue(formatAsPercent, finalSquareCount.Empty, totalEmpty);
-                if (countUI.TotalLabel != null) countUI.TotalLabel.text = FormatValue(formatAsPercent, finalSquareCount.Total, totalTotal);
+                if (countUI.BuiltLabel != null) countUI.BuiltLabel.text = FormatValue(formatAsPercent, finalSquareCount.Built[selectedDistrict], totalBuilt);
+                if (countUI.EmptyLabel != null) countUI.EmptyLabel.text = FormatValue(formatAsPercent, finalSquareCount.Empty[selectedDistrict], totalEmpty);
+                if (countUI.TotalLabel != null) countUI.TotalLabel.text = FormatValue(formatAsPercent, finalSquareCount.Total[selectedDistrict], totalTotal);
             }
 
             // counts were refreshed
@@ -969,14 +1034,13 @@ namespace ZoneInfo
         }
 
         /// <summary>
-        /// reset all square counts
+        /// reset temp square counts
         /// </summary>
         private void ResetSquareCounts()
         {
             for (int squareType = 0; squareType < SquareType.Count; squareType++)
             {
-                _squareCountTemp[squareType].Built = 0;
-                _squareCountTemp[squareType].Empty = 0;
+                _squareCountTemp[squareType].Reset();
             }
         }
 
