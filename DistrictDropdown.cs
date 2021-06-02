@@ -31,6 +31,7 @@ namespace ZoneInfo
         // controls for Update
         private uint _framecounter = 0;
         private bool _updateNow = false;
+        private string _localeID = "";
 
         /// <summary>
         /// initialize the district dropdown
@@ -70,6 +71,9 @@ namespace ZoneInfo
 
             // by default, first entry (Entire City) is selected
             _selectedDistrictID = DistrictIDEntireCity;
+
+            // save locale ID
+            _localeID = _dropdown.localeID;
 
             // successfully initialized
             _initialized = true;
@@ -258,10 +262,12 @@ namespace ZoneInfo
             // check for a change in districts
             GetDistricts(out byte[] IDs, out string[] names, out int count);
             bool districtsChanged = false;
-            if (count != _districtCount)
+            if (count != _districtCount || _dropdown.localeID != _localeID)
             {
                 // a change in count is obviously a change (i.e. a district was added or removed)
+                // a change in locale ID is handled the same
                 districtsChanged = true;
+                _localeID = _dropdown.localeID;
             }
             else
             {
