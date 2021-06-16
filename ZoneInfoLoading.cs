@@ -55,10 +55,8 @@ namespace ZoneInfo
                     // move the panel to its initial position according to the config
                     _infoPanel.relativePosition = new Vector3(config.PanelPositionX, config.PanelPositionY);
 
-                    // set event handlers
+                    // set event handler
                     _activationButton.eventClicked += ActivationButton_eventClicked;
-                    _activationButton.eventKeyDown += ActivationButton_eventKeyDown;
-                    _infoPanel.eventKeyDown += ActivationButton_eventKeyDown;    // use same handler as button
                 }
             }
             catch (Exception ex)
@@ -86,26 +84,20 @@ namespace ZoneInfo
         }
 
         /// <summary>
-        /// handle key down
+        /// hide the panel if it is displayed
         /// </summary>
-        private void ActivationButton_eventKeyDown(UIComponent component, UIKeyEventParameter eventParam)
+        public static void HidePanel()
         {
-            // check for escape key
-            if (eventParam.keycode == KeyCode.Escape && !eventParam.used)
+            if (_infoPanel != null && _infoPanel.isVisible)
             {
-                // hide panel if it is displayed
-                if (_infoPanel != null && _infoPanel.isVisible)
-                {
-                    TogglePanelVisibility();
-                    eventParam.Use();
-                }
+                TogglePanelVisibility();
             }
         }
 
         /// <summary>
         /// toggle panel visibility
         /// </summary>
-        public static void TogglePanelVisibility()
+        private static void TogglePanelVisibility()
         {
             // make sure panel was created
             if (_infoPanel != null)

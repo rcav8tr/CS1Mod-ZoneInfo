@@ -70,6 +70,77 @@
   <ItemGroup>
     <EmbeddedResource Include="ActivationButtonImages.png" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="ZoneImages.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ZoneImages\Original\DistrictSpecializationCommercialNone.png" />
+    <None Include="ZoneImages\Original\DistrictSpecializationNone.png" />
+    <None Include="ZoneImages\Original\DistrictSpecializationOfficeNone.png" />
+    <None Include="ZoneImages\Original\DistrictSpecializationResidentialNone.png" />
+    <None Include="ZoneImages\Original\IconPolicyFarming.png" />
+    <None Include="ZoneImages\Original\IconPolicyForest.png" />
+    <None Include="ZoneImages\Original\IconPolicyHightech.png" />
+    <None Include="ZoneImages\Original\IconPolicyLeisure.png" />
+    <None Include="ZoneImages\Original\IconPolicyOil.png" />
+    <None Include="ZoneImages\Original\IconPolicyOre.png" />
+    <None Include="ZoneImages\Original\IconPolicyOrganic.png" />
+    <None Include="ZoneImages\Original\IconPolicySelfsufficient.png" />
+    <None Include="ZoneImages\Original\IconPolicyTourist.png" />
+    <None Include="ZoneImages\Original\ToolbarIconZoning.png" />
+    <None Include="ZoneImages\Original\ZoningCommercialHigh.png" />
+    <None Include="ZoneImages\Original\ZoningCommercialLow.png" />
+    <None Include="ZoneImages\Original\ZoningIndustrial.png" />
+    <None Include="ZoneImages\Original\ZoningOffice.png" />
+    <None Include="ZoneImages\Original\ZoningResidentialHigh.png" />
+    <None Include="ZoneImages\Original\ZoningResidentialLow.png" />
+    <None Include="ZoneImages\Original\ZoningUnzoned.png" />
+    <None Include="ZoneImages\ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ZoneImages\Adjusted\CommercialGenericHighLocked.png" />
+    <None Include="ZoneImages\Adjusted\CommercialGenericHighNormal.png" />
+    <None Include="ZoneImages\Adjusted\CommercialGenericLowLocked.png" />
+    <None Include="ZoneImages\Adjusted\CommercialGenericLowNormal.png" />
+    <None Include="ZoneImages\Adjusted\CommercialLeisureLocked.png" />
+    <None Include="ZoneImages\Adjusted\CommercialLeisureNormal.png" />
+    <None Include="ZoneImages\Adjusted\CommercialOrganicLocked.png" />
+    <None Include="ZoneImages\Adjusted\CommercialOrganicNormal.png" />
+    <None Include="ZoneImages\Adjusted\CommercialSubtotalLocked.png" />
+    <None Include="ZoneImages\Adjusted\CommercialSubtotalNormal.png" />
+    <None Include="ZoneImages\Adjusted\CommercialTourismLocked.png" />
+    <None Include="ZoneImages\Adjusted\CommercialTourismNormal.png" />
+    <None Include="ZoneImages\Adjusted\IndustrialFarmingLocked.png" />
+    <None Include="ZoneImages\Adjusted\IndustrialFarmingNormal.png" />
+    <None Include="ZoneImages\Adjusted\IndustrialForestryLocked.png" />
+    <None Include="ZoneImages\Adjusted\IndustrialForestryNormal.png" />
+    <None Include="ZoneImages\Adjusted\IndustrialGenericLocked.png" />
+    <None Include="ZoneImages\Adjusted\IndustrialGenericNormal.png" />
+    <None Include="ZoneImages\Adjusted\IndustrialOilLocked.png" />
+    <None Include="ZoneImages\Adjusted\IndustrialOilNormal.png" />
+    <None Include="ZoneImages\Adjusted\IndustrialOreLocked.png" />
+    <None Include="ZoneImages\Adjusted\IndustrialOreNormal.png" />
+    <None Include="ZoneImages\Adjusted\IndustrialSubtotalLocked.png" />
+    <None Include="ZoneImages\Adjusted\IndustrialSubtotalNormal.png" />
+    <None Include="ZoneImages\Adjusted\OfficeGenericLocked.png" />
+    <None Include="ZoneImages\Adjusted\OfficeGenericNormal.png" />
+    <None Include="ZoneImages\Adjusted\OfficeITClusterLocked.png" />
+    <None Include="ZoneImages\Adjusted\OfficeITClusterNormal.png" />
+    <None Include="ZoneImages\Adjusted\OfficeSubtotalLocked.png" />
+    <None Include="ZoneImages\Adjusted\OfficeSubtotalNormal.png" />
+    <None Include="ZoneImages\Adjusted\ResidentialGenericHighLocked.png" />
+    <None Include="ZoneImages\Adjusted\ResidentialGenericHighNormal.png" />
+    <None Include="ZoneImages\Adjusted\ResidentialGenericLowLocked.png" />
+    <None Include="ZoneImages\Adjusted\ResidentialGenericLowNormal.png" />
+    <None Include="ZoneImages\Adjusted\ResidentialSelfSuffLocked.png" />
+    <None Include="ZoneImages\Adjusted\ResidentialSelfSuffNormal.png" />
+    <None Include="ZoneImages\Adjusted\ResidentialSubtotalLocked.png" />
+    <None Include="ZoneImages\Adjusted\ResidentialSubtotalNormal.png" />
+    <None Include="ZoneImages\Adjusted\TotalLocked.png" />
+    <None Include="ZoneImages\Adjusted\TotalNormal.png" />
+    <None Include="ZoneImages\Adjusted\UnzonedLocked.png" />
+    <None Include="ZoneImages\Adjusted\UnzonedNormal.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>mkdir "%25LOCALAPPDATA%25\Colossal Order\Cities_Skylines\Addons\Mods\$(SolutionName)"

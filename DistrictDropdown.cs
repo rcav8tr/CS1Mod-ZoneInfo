@@ -16,6 +16,7 @@ namespace ZoneInfo
         private UIPanel _panel;
         private UILabel _label;
         private UIDropDown _dropdown;
+        private UILabel _disabledLabel;
 
         // district data
         private byte[] _districtIDs;
@@ -27,6 +28,11 @@ namespace ZoneInfo
         // here, district 0 means no district, which is different than entire city
         public const byte DistrictIDNoDistrict = 0;
         public const byte DistrictIDEntireCity = DistrictManager.MAX_DISTRICT_COUNT;
+
+        // define special district names
+        private const string DistrictHeading = "District:";
+        private const string DistrictNameNoDistrict = "No District";
+        private const string DistrictNameEntireCity = "Entire City";
 
         // controls for Update
         private uint _framecounter = 0;
@@ -47,6 +53,7 @@ namespace ZoneInfo
             }
             _panel.relativePosition = Vector3.zero;
             _panel.size = size;
+            _panel.eventIsEnabledChanged += _panel_eventIsEnabledChanged;
 
             // get label on the panel
             _label = _panel.Find<UILabel>("Label");
@@ -54,6 +61,7 @@ namespace ZoneInfo
             {
                 throw new TypeLoadException($"Unable to find component [Label] on panel [{_panel.name}].");
             }
+            _label.text = DistrictHeading;
 
             // get dropdown on the panel
             _dropdown = _panel.Find<UIDropDown>("Dropdown");
@@ -64,6 +72,19 @@ namespace ZoneInfo
             _dropdown.autoSize = false;
             _dropdown.width = width;
             _dropdown.eventSelectedIndexChanged += _dropdown_eventSelectedIndexChanged;
+
+            // create label to show when disabled
+            _disabledLabel = AddUIComponent<UILabel>();
+            if (_dropdown == null)
+            {
+                throw new TypeLoadException($"Unable to add disabled label on panel [DistrictDropdown]");
+            }
+            _disabledLabel.name = "DisabledLabel";
+            _disabledLabel.relativePosition = _label.relativePosition;
+            _disabledLabel.autoSize = false;
+            _disabledLabel.size = new Vector2(size.x - _disabledLabel.relativePosition.x, size.y - _disabledLabel.relativePosition.y);
+            _disabledLabel.isVisible = false;   // start hidden because dropdown starts enabled
+            _disabledLabel.isEnabled = false;   // default to disabled so disabledTextColor is used
 
             // populate dropdown with initial districts
             GetDistricts(out _districtIDs, out string[] names, out _districtCount);
@@ -86,6 +107,12 @@ namespace ZoneInfo
             set { _dropdown.builtinKeyNavigation = value; }
         }
 
+        public Color32 disabledTextColor
+        {
+            get { return _label.disabledTextColor; }
+            set { _label.disabledTextColor = value; _dropdown.disabledTextColor = value; _disabledLabel.disabledTextColor = value; }
+        }
+
         public UIDropDown dropdown
         {
             get { return _dropdown; }
@@ -100,7 +127,7 @@ namespace ZoneInfo
         public UIFont font
         {
             get { return _label.font; }
-            set { _label.font = value; _dropdown.font = value; }
+            set { _label.font = value; _dropdown.font = value; _disabledLabel.font = value; }
         }
 
         /// <summary>
@@ -135,12 +162,6 @@ namespace ZoneInfo
             set { _dropdown.listHeight = value; }
         }
 
-        public string text
-        {
-            get { return _label.text;  }
-            set { _label.text = value; }
-        }
-
         public byte selectedDistrictID
         {
             get { return _selectedDistrictID; }
@@ -170,13 +191,13 @@ namespace ZoneInfo
         public Color32 textColor
         {
             get { return _label.textColor; }
-            set { _label.textColor = value; _dropdown.textColor = value; }
+            set { _label.textColor = value; _dropdown.textColor = value; _disabledLabel.textColor = value; }
         }
 
         public float textScale
         {
             get { return _label.textScale; }
-            set { _label.textScale = value; _dropdown.textScale = value; }
+            set { _label.textScale = value; _dropdown.textScale = value; _disabledLabel.textScale = value; }
         }
 
         /// <summary>
@@ -191,6 +212,7 @@ namespace ZoneInfo
                 _panel.size = size;
                 _label.width = size.x;
                 _dropdown.width = size.x;
+                _disabledLabel.size = new Vector2(size.x - _disabledLabel.relativePosition.x, size.y - _disabledLabel.relativePosition.y);
             }
         }
 
@@ -208,6 +230,20 @@ namespace ZoneInfo
         }
 
         /// <summary>
+        /// handle change in enabled status
+        /// </summary>
+        private void _panel_eventIsEnabledChanged(UIComponent component, bool value)
+        {
+            // show/hide normal dropdown UI
+            _label.isVisible = value;
+            _dropdown.isVisible = value;
+
+            // hide/show disabled label
+            _disabledLabel.isVisible = !value;
+            UpdateDisabledLabel();
+        }
+
+        /// <summary>
         /// convert dropdown index changed event to a possible SelectedDistrictChanged event
         /// </summary>
         private void _dropdown_eventSelectedIndexChanged(UIComponent component, int value)
@@ -218,6 +254,9 @@ namespace ZoneInfo
             {
                 // save selected district ID
                 _selectedDistrictID = newDistrictID;
+
+                // update disabled label in case selected district was changed while disabled
+                UpdateDisabledLabel();
 
                 // raise SelectedDistrictChanged event
                 OnSelectedDistrictChanged(new SelectedDistrictChangedEventArgs(newDistrictID));
@@ -233,6 +272,14 @@ namespace ZoneInfo
         }
 
         /// <summary>
+        /// update the text on the disabled label
+        /// </summary>
+        private void UpdateDisabledLabel()
+        {
+            _disabledLabel.text = DistrictHeading + "\n    " + selectedDistrictName;
+        }
+
+        /// <summary>
         /// Update is called every frame
         /// check for and handle changes in the districts
         /// </summary>
@@ -245,17 +292,17 @@ namespace ZoneInfo
             if (!_initialized)
                 return;
 
-            // must be visible and enabled (performance enhancement)
-            if (!isVisible || !enabled)
+            // must be visible (performance enhancement)
+            if (!isVisible)
                 return;
 
             // manager must be ready
             if (!DistrictManager.exists)
                 return;
 
-            // update only every 5th frame (performance enhancement) unless need to update now
+            // update only every 11th frame (performance enhancement) unless need to update now
             ++_framecounter;
-            if (!(_framecounter % 5 == 0 || _updateNow))
+            if (!(_framecounter % 11 == 0 || _updateNow))
                 return;
             _updateNow = false;
 
@@ -362,7 +409,7 @@ namespace ZoneInfo
 
             // always include first entry for Entire City
             IDs[count] = DistrictIDEntireCity;
-            names[count] = "Entire City";
+            names[count] = DistrictNameEntireCity;
             count++;
 
             // loop over each district
@@ -379,7 +426,7 @@ namespace ZoneInfo
                     if (!entryNoDistrictAdded)
                     {
                         IDs[count] = DistrictIDNoDistrict;
-                        names[count] = "No District";
+                        names[count] = DistrictNameNoDistrict;
                         count++;
                         entryNoDistrictAdded = true;
                     }

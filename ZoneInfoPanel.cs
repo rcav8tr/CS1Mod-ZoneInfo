@@ -21,49 +21,38 @@ namespace ZoneInfo
         private bool _displayCounts = false;
         private bool _stopUpdate = false;
 
-        // define the square types to be counted
-        // define as int instead of as enum so they can be used directly as array indexes
-        struct SquareType
+        // define the zone types to be counted
+        private enum Zone
         {
-            // zero based square types
-            public const int
-                ResidentialGenericLow   = 0,
-                ResidentialGenericHigh  = 1,
-                ResidentialSelfSuff     = 2,
-                ResidentialSubtotal     = 3,
+            ResidentialGenericLow,
+            ResidentialGenericHigh,
+            ResidentialSelfSuff,
+            ResidentialSubtotal,
 
-                CommercialGenericLow    = 4,
-                CommercialGenericHigh   = 5,
-                CommercialTourism       = 6,
-                CommercialLeisure       = 7,
-                CommercialOrganic       = 8,
-                CommercialSubtotal      = 9,
+            CommercialGenericLow,
+            CommercialGenericHigh,
+            CommercialTourism,
+            CommercialLeisure,
+            CommercialOrganic,
+            CommercialSubtotal,
 
-                IndustrialGeneric       = 10,
-                IndustrialForestry      = 11,
-                IndustrialFarming       = 12,
-                IndustrialOre           = 13,
-                IndustrialOil           = 14,
-                IndustrialSubtotal      = 15,
+            IndustrialGeneric,
+            IndustrialForestry,
+            IndustrialFarming,
+            IndustrialOre,
+            IndustrialOil,
+            IndustrialSubtotal,
 
-                OfficeGeneric           = 16,
-                OfficeIT                = 17,
-                OfficeSubtotal          = 18,
+            OfficeGeneric,
+            OfficeITCluster,
+            OfficeSubtotal,
 
-                Unzoned                 = 19,
+            Unzoned,
 
-                Total                   = 20,
-
-                Count                   = 21;   // number of SquareType
-
-            /// <summary>
-            /// return whether or not the square type is valid
-            /// </summary>
-            public static bool IsValid(int value)
-            {
-                return value >= 0 && value < Count;
-            }
-        }
+            Total
+        };
+        private static readonly Array Zones = Enum.GetValues(typeof(Zone));
+        private static readonly int ZoneCount = Zones.Length;
 
         /// <summary>
         /// hold the info for a data row
@@ -71,13 +60,13 @@ namespace ZoneInfo
         private class SquareCount
         {
             // +1 to make room for entry for Entire City
-            private const int ArraySize = DistrictManager.MAX_DISTRICT_COUNT + 1;
+            private const int MaxDistricts = DistrictManager.MAX_DISTRICT_COUNT + 1;
 
             // the 3 counts for a data row
             // index into each array is district ID
-            public int[] Built = new int[ArraySize];
-            public int[] Empty = new int[ArraySize];
-            public int[] Total = new int[ArraySize];
+            public int[] built = new int[MaxDistricts];
+            public int[] empty = new int[MaxDistricts];
+            public int[] total = new int[MaxDistricts];
 
             /// <summary>
             /// increment the counts for the specified district and for the Entire City
@@ -87,18 +76,18 @@ namespace ZoneInfo
                 // increment either Built or Empty depending on the occupied flag
                 if (occupied)
                 {
-                    Built[districtID]++;
-                    Built[DistrictDropdown.DistrictIDEntireCity]++;
+                    built[districtID]++;
+                    built[DistrictDropdown.DistrictIDEntireCity]++;
                 }
                 else
                 {
-                    Empty[districtID]++;
-                    Empty[DistrictDropdown.DistrictIDEntireCity]++;
+                    empty[districtID]++;
+                    empty[DistrictDropdown.DistrictIDEntireCity]++;
                 }
 
                 // always increment the total
-                Total[districtID]++;
-                Total[DistrictDropdown.DistrictIDEntireCity]++;
+                total[districtID]++;
+                total[DistrictDropdown.DistrictIDEntireCity]++;
             }
 
             /// <summary>
@@ -106,11 +95,11 @@ namespace ZoneInfo
             /// </summary>
             public void Copy(SquareCount from)
             {
-                for (int districtID = 0; districtID < ArraySize; districtID++)
+                for (int districtID = 0; districtID < MaxDistricts; districtID++)
                 {
-                    Built[districtID] = from.Built[districtID];
-                    Empty[districtID] = from.Empty[districtID];
-                    Total[districtID] = from.Total[districtID];
+                    built[districtID] = from.built[districtID];
+                    empty[districtID] = from.empty[districtID];
+                    total[districtID] = from.total[districtID];
                 }
             }
 
@@ -119,37 +108,44 @@ namespace ZoneInfo
             /// </summary>
             public void Reset()
             {
-                for (int districtID = 0; districtID < ArraySize; districtID++)
+                for (int districtID = 0; districtID < MaxDistricts; districtID++)
                 {
-                    Built[districtID] = 0;
-                    Empty[districtID] = 0;
-                    Total[districtID] = 0;
+                    built[districtID] = 0;
+                    empty[districtID] = 0;
+                    total[districtID] = 0;
                 }
             }
         }
 
-        // define two square count arrays:
-        //    Temp for accumulating current counts
-        //    Final for holding the counts to display
-        private SquareCount[] _squareCountTemp;
-        private SquareCount[] _squareCountFinal;
-
         /// <summary>
         /// the UI elements to display a SquareCount in a row
         /// </summary>
-        private class SquareCountUI
+        private class UISquareCount
         {
-            public UISprite Symbol;
-            public UILabel DescriptionLabel;
-            public UILabel BuiltLabel;
-            public UILabel EmptyLabel;
-            public UILabel TotalLabel;
+            public bool valid;
+            public UISprite symbol;
+            public UILabel description;
+            public UILabel built;
+            public UILabel empty;
+            public UILabel total;
+
+            // routines to consistently construct sprite names for the symbol
+            public static string SpriteNameNormal(Zone zone) { return zone.ToString() + "Normal"; }
+            public static string SpriteNameLocked(Zone zone) { return zone.ToString() + "Locked"; }
         }
-        private SquareCountUI[] _squareCountUI;
+
+        // define square count arrays:
+        //    temp for accumulating current counts
+        //    final for holding the counts to display
+        //    UI for holding the UI elements
+        // index into array is the Zone enum
+        private SquareCount[] _tempSquareCounts;
+        private SquareCount[] _finalSquareCounts;
+        private UISquareCount[] _uiSquareCounts;
 
         // other UI elements
         private DistrictDropdown _district;
-        private SquareCountUI _heading;
+        private UISquareCount _heading;
         private UISprite _countCheckbox;
         private UILabel  _countLabel;
         private UISprite _percentCheckbox;
@@ -160,11 +156,12 @@ namespace ZoneInfo
         private const float DistrictHeight = 45f;
         private const float LeftPadding = 8f;
         private const float ItemHeight = 17f;
-        private readonly Color32 TextColor = new Color32(185, 221, 254, 255);
+        private static readonly Color32 TextColorNormal = new Color32(185, 221, 254, 255);
+        private static readonly Color32 TextColorLocked = new Color32((byte)(TextColorNormal.r * 0.5f), (byte)(TextColorNormal.g * 0.5f), (byte)(TextColorNormal.b * 0.5f), 255);
         private const float TextScale = 0.75f;
 
         // size of one side of a square
-        const float SquareSize = 8f;
+        private const float SquareSize = 8f;
 
 
         /// <summary>
@@ -201,35 +198,6 @@ namespace ZoneInfo
                     }
                 }
 
-                // get game atlases
-                UITextureAtlas ingameAtlas = null;
-                UITextureAtlas thumbnailsAtlas = null;
-                UITextureAtlas[] atlases = Resources.FindObjectsOfTypeAll(typeof(UITextureAtlas)) as UITextureAtlas[];
-                foreach (UITextureAtlas atlas in atlases)
-                {
-                    if (atlas != null)
-                    {
-                        if (atlas.name == "Ingame")
-                        {
-                            ingameAtlas = atlas;
-                        }
-                        if (atlas.name == "Thumbnails")
-                        {
-                            thumbnailsAtlas = atlas;
-                        }
-                    }
-                }
-                if (ingameAtlas == null)
-                {
-                    Debug.LogError("Unable to find Ingame atlas.");
-                    return;
-                }
-                if (thumbnailsAtlas == null)
-                {
-                    Debug.LogError("Unable to find Thumbnails atlas.");
-                    return;
-                }
-
                 // add district dropdown
                 _district = AddUIComponent<DistrictDropdown>();
                 if (_district == null || !_district.initialized)
@@ -238,12 +206,12 @@ namespace ZoneInfo
                     return;
                 }
                 _district.name = "DistrictPanel";
-                _district.text = "District:";
                 _district.relativePosition = new Vector3(LeftPadding, 45f);
                 _district.dropdownHeight = ItemHeight + 7f;
                 _district.font = _defaultFont;
                 _district.textScale = TextScale;
-                _district.textColor = TextColor;
+                _district.textColor = TextColorNormal;
+                _district.disabledTextColor = TextColorLocked;
                 _district.listHeight = 10 * (int)ItemHeight + 8;
                 _district.itemHeight = (int)ItemHeight;
                 _district.builtinKeyNavigation = true;
@@ -252,19 +220,19 @@ namespace ZoneInfo
                 // create heading row
                 float top = 50f;            // start just below title bar of panel
                 top += DistrictHeight;      // skip over district dropdown
-                _heading = new SquareCountUI();
-                if (!CreateSquareCount(true, ref top, ingameAtlas, "", "Heading", "", _heading)) return;
-                _heading.BuiltLabel.text = "Built";
-                _heading.EmptyLabel.text = "Empty";
-                _heading.TotalLabel.text = "Total";
-                _heading.BuiltLabel.tooltip = "Built Squares";
-                _heading.EmptyLabel.tooltip = "Empty Squares";
-                _heading.TotalLabel.tooltip = "Built + Empty Squares";
+                _heading = new UISquareCount();
+                if (!CreateUISquareCount(_heading, "Heading", "", ref top)) return;
+                _heading.built.text = "Built";
+                _heading.empty.text = "Empty";
+                _heading.total.text = "Total";
+                _heading.built.tooltip = "Built Squares";
+                _heading.empty.tooltip = "Empty Squares";
+                _heading.total.tooltip = "Built + Empty Squares";
 
                 // create a line under each count heading
-                if (!CreateLine(_heading.BuiltLabel)) return;
-                if (!CreateLine(_heading.EmptyLabel)) return;
-                if (!CreateLine(_heading.TotalLabel)) return;
+                if (!CreateLine(_heading.built)) return;
+                if (!CreateLine(_heading.empty)) return;
+                if (!CreateLine(_heading.total)) return;
 
                 // create two checkboxes left of the heading
                 if (!CreateCheckbox(ref _countCheckbox, ref _countLabel, "Count", 16f, 50f)) return;
@@ -280,63 +248,79 @@ namespace ZoneInfo
                 _percentCheckbox.eventClicked += CheckBox_eventClicked;
                 _percentLabel.eventClicked    += CheckBox_eventClicked;
 
-                // create a square count for each SquareType
-                _squareCountTemp  = new SquareCount  [SquareType.Count];
-                _squareCountFinal = new SquareCount  [SquareType.Count];
-                _squareCountUI    = new SquareCountUI[SquareType.Count];
-                for (int squareType = 0; squareType < SquareType.Count; squareType++)
+                // get zone atlas
+                UITextureAtlas zoneAtlas = GetZoneAtlas();
+                if (zoneAtlas == null)
                 {
-                    _squareCountTemp [squareType] = new SquareCount();
-                    _squareCountFinal[squareType] = new SquareCount();
-                    _squareCountUI   [squareType] = new SquareCountUI();
+                    Debug.LogError($"Unable to get atlas of zone images.");
+                    return;
+                }
+
+                // create a square count for each Zone
+                _tempSquareCounts  = new SquareCount[ZoneCount];
+                _finalSquareCounts = new SquareCount[ZoneCount];
+                _uiSquareCounts    = new UISquareCount[ZoneCount];
+                foreach (Zone zone in Zones)
+                {
+                    _tempSquareCounts [(int)zone] = new SquareCount();
+                    _finalSquareCounts[(int)zone] = new SquareCount();
+                    _uiSquareCounts   [(int)zone] = new UISquareCount();
                 }
 
                 // get DLC flags
                 bool dlcBaseGame    = true;
                 bool dlcAfterDark   = SteamHelper.IsDLCOwned(SteamHelper.DLC.AfterDarkDLC);
                 bool dlcGreenCities = SteamHelper.IsDLCOwned(SteamHelper.DLC.GreenCitiesDLC);
-
-                // create each square count row based on DLC
-                // only the final square counts get the UI elements
+                
+                // create each UI square count row based on DLC
                 top += 5f;
                 const float SectionSpacing = 10f;
-                if (!CreateSquareCount(dlcBaseGame,    ref top, thumbnailsAtlas, "ZoningResidentialLow",                  "ResidentialLow",      "Residential Low Density",  _squareCountUI[SquareType.ResidentialGenericLow ])) return;
-                if (!CreateSquareCount(dlcBaseGame,    ref top, thumbnailsAtlas, "ZoningResidentialHigh",                 "ResidentialHigh",     "Residential High Density", _squareCountUI[SquareType.ResidentialGenericHigh])) return;
-                if (!CreateSquareCount(dlcGreenCities, ref top, ingameAtlas,     "IconPolicySelfsufficient",              "ResidentialSelfSuff", "Residential Self-Suff",    _squareCountUI[SquareType.ResidentialSelfSuff   ])) return;
-                if (!CreateSquareCount(dlcBaseGame,    ref top, thumbnailsAtlas, "DistrictSpecializationResidentialNone", "ResidentialSubTotal", "Residential Subtotal",     _squareCountUI[SquareType.ResidentialSubtotal   ])) return;
+                if (dlcBaseGame   ) { if (!CreateUISquareCount(Zone.ResidentialGenericLow,  "ResidentialLow",      "Residential Low Density",  zoneAtlas, ref top)) return; }
+                if (dlcBaseGame   ) { if (!CreateUISquareCount(Zone.ResidentialGenericHigh, "ResidentialHigh",     "Residential High Density", zoneAtlas, ref top)) return; }
+                if (dlcGreenCities) { if (!CreateUISquareCount(Zone.ResidentialSelfSuff,    "ResidentialSelfSuff", "Residential Self-Suff",    zoneAtlas, ref top)) return; }
+                if (dlcBaseGame   ) { if (!CreateUISquareCount(Zone.ResidentialSubtotal,    "ResidentialSubTotal", "Residential Subtotal",     zoneAtlas, ref top)) return; }
 
                 top += SectionSpacing;
-                if (!CreateSquareCount(dlcBaseGame,    ref top, thumbnailsAtlas, "ZoningCommercialLow",                   "CommercialLow",       "Commercial Low Density",   _squareCountUI[SquareType.CommercialGenericLow  ])) return;
-                if (!CreateSquareCount(dlcBaseGame,    ref top, thumbnailsAtlas, "ZoningCommercialHigh",                  "CommercialHigh",      "Commercial High Density",  _squareCountUI[SquareType.CommercialGenericHigh ])) return;
-                if (!CreateSquareCount(dlcAfterDark,   ref top, ingameAtlas,     "IconPolicyTourist",                     "CommercialTourism",   "Commercial Tourism",       _squareCountUI[SquareType.CommercialTourism     ])) return;
-                if (!CreateSquareCount(dlcAfterDark,   ref top, ingameAtlas,     "IconPolicyLeisure",                     "CommercialLeisure",   "Commercial Leisure",       _squareCountUI[SquareType.CommercialLeisure     ])) return;
-                if (!CreateSquareCount(dlcGreenCities, ref top, ingameAtlas,     "IconPolicyOrganic",                     "CommercialOrganic",   "Commercial Organic",       _squareCountUI[SquareType.CommercialOrganic     ])) return;
-                if (!CreateSquareCount(dlcBaseGame,    ref top, thumbnailsAtlas, "DistrictSpecializationCommercialNone",  "CommercialSubTotal",  "Commercial Subtotal",      _squareCountUI[SquareType.CommercialSubtotal    ])) return;
-                top += SectionSpacing;
-                if (!CreateSquareCount(dlcBaseGame,    ref top, thumbnailsAtlas, "ZoningIndustrial",                      "IndustrialGeneric",   "Industrial Generic",       _squareCountUI[SquareType.IndustrialGeneric     ])) return;
-                if (!CreateSquareCount(dlcBaseGame,    ref top, ingameAtlas,     "IconPolicyForest",                      "IndustrialForestry",  "Industrial Forestry",      _squareCountUI[SquareType.IndustrialForestry    ])) return;
-                if (!CreateSquareCount(dlcBaseGame,    ref top, ingameAtlas,     "IconPolicyFarming",                     "IndustrialFarming",   "Industrial Farming",       _squareCountUI[SquareType.IndustrialFarming     ])) return;
-                if (!CreateSquareCount(dlcBaseGame,    ref top, ingameAtlas,     "IconPolicyOre",                         "IndustrialOre",       "Industrial Ore",           _squareCountUI[SquareType.IndustrialOre         ])) return;
-                if (!CreateSquareCount(dlcBaseGame,    ref top, ingameAtlas,     "IconPolicyOil",                         "IndustrialOil",       "Industrial Oil",           _squareCountUI[SquareType.IndustrialOil         ])) return;
-                if (!CreateSquareCount(dlcBaseGame,    ref top, thumbnailsAtlas, "DistrictSpecializationNone",            "IndustrialSubTotal",  "Industrial Subtotal",      _squareCountUI[SquareType.IndustrialSubtotal    ])) return;
+                if (dlcBaseGame   ) { if (!CreateUISquareCount(Zone.CommercialGenericLow,   "CommercialLow",       "Commercial Low Density",   zoneAtlas, ref top)) return; }
+                if (dlcBaseGame   ) { if (!CreateUISquareCount(Zone.CommercialGenericHigh,  "CommercialHigh",      "Commercial High Density",  zoneAtlas, ref top)) return; }
+                if (dlcAfterDark  ) { if (!CreateUISquareCount(Zone.CommercialTourism,      "CommercialTourism",   "Commercial Tourism",       zoneAtlas, ref top)) return; }
+                if (dlcAfterDark  ) { if (!CreateUISquareCount(Zone.CommercialLeisure,      "CommercialLeisure",   "Commercial Leisure",       zoneAtlas, ref top)) return; }
+                if (dlcGreenCities) { if (!CreateUISquareCount(Zone.CommercialOrganic,      "CommercialOrganic",   "Commercial Organic",       zoneAtlas, ref top)) return; }
+                if (dlcBaseGame   ) { if (!CreateUISquareCount(Zone.CommercialSubtotal,     "CommercialSubTotal",  "Commercial Subtotal",      zoneAtlas, ref top)) return; }
 
                 top += SectionSpacing;
-                if (!CreateSquareCount(dlcBaseGame,    ref top, thumbnailsAtlas, "ZoningOffice",                          "OfficeGeneric",       "Office Generic",           _squareCountUI[SquareType.OfficeGeneric         ])) return;
-                if (!CreateSquareCount(dlcGreenCities, ref top, ingameAtlas,     "IconPolicyHightech",                    "OfficeITCluster",     "Office IT Cluster",        _squareCountUI[SquareType.OfficeIT              ])) return;
-                if (!CreateSquareCount(dlcGreenCities, ref top, thumbnailsAtlas, "DistrictSpecializationOfficeNone",      "OfficeSubTotal",      "Office Subtotal",          _squareCountUI[SquareType.OfficeSubtotal        ])) return;
+                if (dlcBaseGame   ) { if (!CreateUISquareCount(Zone.IndustrialGeneric,      "IndustrialGeneric",   "Industrial Generic",       zoneAtlas, ref top)) return; }
+                if (dlcBaseGame   ) { if (!CreateUISquareCount(Zone.IndustrialForestry,     "IndustrialForestry",  "Industrial Forestry",      zoneAtlas, ref top)) return; }
+                if (dlcBaseGame   ) { if (!CreateUISquareCount(Zone.IndustrialFarming,      "IndustrialFarming",   "Industrial Farming",       zoneAtlas, ref top)) return; }
+                if (dlcBaseGame   ) { if (!CreateUISquareCount(Zone.IndustrialOre,          "IndustrialOre",       "Industrial Ore",           zoneAtlas, ref top)) return; }
+                if (dlcBaseGame   ) { if (!CreateUISquareCount(Zone.IndustrialOil,          "IndustrialOil",       "Industrial Oil",           zoneAtlas, ref top)) return; }
+                if (dlcBaseGame   ) { if (!CreateUISquareCount(Zone.IndustrialSubtotal,     "IndustrialSubTotal",  "Industrial Subtotal",      zoneAtlas, ref top)) return; }
 
                 top += SectionSpacing;
-                if (!CreateSquareCount(dlcBaseGame,    ref top, thumbnailsAtlas, "ZoningUnzoned",                         "Unzoned",             "Unzoned",                  _squareCountUI[SquareType.Unzoned               ])) return;
+                if (dlcBaseGame   ) { if (!CreateUISquareCount(Zone.OfficeGeneric,          "OfficeGeneric",       "Office Generic",           zoneAtlas, ref top)) return; }
+                if (dlcGreenCities) { if (!CreateUISquareCount(Zone.OfficeITCluster,        "OfficeITCluster",     "Office IT Cluster",        zoneAtlas, ref top)) return; }
+                if (dlcGreenCities) { if (!CreateUISquareCount(Zone.OfficeSubtotal,         "OfficeSubTotal",      "Office Subtotal",          zoneAtlas, ref top)) return; }
 
                 top += SectionSpacing;
-                if (!CreateSquareCount(dlcBaseGame,    ref top, ingameAtlas,     "ToolbarIconZoning",                     "Total",               "Total",                    _squareCountUI[SquareType.Total                 ])) return;
+                if (dlcBaseGame   ) { if (!CreateUISquareCount(Zone.Unzoned,                "Unzoned",             "Unzoned",                  zoneAtlas, ref top)) return; }
+
+                top += SectionSpacing;
+                if (dlcBaseGame   ) { if (!CreateUISquareCount(Zone.Total,                  "Total",               "Total",                    zoneAtlas, ref top)) return; }
 
                 // set panel size based on size and position of total row
-                SquareCountUI totalRow = _squareCountUI[SquareType.Total];
+                UISquareCount totalRow = _uiSquareCounts[(int)Zone.Total];
                 size = new Vector3(
-                    totalRow.TotalLabel.relativePosition.x + totalRow.TotalLabel.size.x + totalRow.Symbol.relativePosition.x,
-                    totalRow.TotalLabel.relativePosition.y + totalRow.TotalLabel.size.y + 5f);
+                    totalRow.total.relativePosition.x + totalRow.total.size.x + totalRow.symbol.relativePosition.x,
+                    totalRow.total.relativePosition.y + totalRow.total.size.y + 5f);
                 _district.size = new Vector2(width - 2f * LeftPadding, DistrictHeight);
+
+                // get the atlas of activation button images
+                UITextureAtlas activationButtonImages = ZoneInfoActivationButton.GetActivationButtonAtlas();
+                if (activationButtonImages == null)
+                {
+                    Debug.LogError($"Unable to get atlas of activation button images.");
+                    return;
+                }
 
                 // create icon in upper left
                 UISprite panelIcon = AddUIComponent<UISprite>();
@@ -349,9 +333,7 @@ namespace ZoneInfo
                 panelIcon.autoSize = false;
                 panelIcon.size = new Vector2(36f, 36f);
                 panelIcon.relativePosition = new Vector3(10f, 2f);
-                UITextureAtlas buttonAtlas = TextureUtil.GenerateLinearAtlas(ZoneInfoActivationButton.ActivationButtonAtlas, TextureUtil.ActivationButtonTexture2D, 4,
-                    new string[] { ZoneInfoActivationButton.ForegroundSprite, ZoneInfoActivationButton.BackgroundSpriteNormal, ZoneInfoActivationButton.BackgroundSpriteHovered, ZoneInfoActivationButton.BackgroundSpriteFocused });
-                panelIcon.atlas = buttonAtlas;
+                panelIcon.atlas = activationButtonImages;
                 panelIcon.spriteName = ZoneInfoActivationButton.ForegroundSprite;
                 panelIcon.isVisible = true;
 
@@ -416,39 +398,83 @@ namespace ZoneInfo
         }
 
         /// <summary>
-        /// create a square count row
+        /// get an atlas of the zone images
         /// </summary>
-        private bool CreateSquareCount(bool dlcActive, ref float top, UITextureAtlas atlas, string spriteName, string namePrefix, string text, SquareCountUI squareCountUI)
+        public static UITextureAtlas GetZoneAtlas()
         {
-            // skip if DLC is not active
-            if (!dlcActive)
+            // load activation button texture from the DLL
+            int zoneImageCount = ZoneCount * 2;
+            string resourceName = typeof(ZoneInfoPanel).Namespace + ".ZoneImages.png";
+            Texture2D zoneImages = TextureUtil.GetDllResource(resourceName, zoneImageCount * 40, 40);
+            if (zoneImages == null)
             {
-                return true;
+                Debug.LogError($"Unable to get zone image resource.");
+                return null;
             }
 
+            // construct array of sprite names
+            // assumes zone images are in the same order as the Zone enum
+            string[] spriteNames = new string[zoneImageCount];
+            int i = 0;
+            foreach (Zone zone in Zones)
+            {
+                spriteNames[i++] = UISquareCount.SpriteNameNormal(zone);
+                spriteNames[i++] = UISquareCount.SpriteNameLocked(zone);
+            }
+
+            // create a new atlas of zone images
+            return TextureUtil.GenerateAtlasFromHorizontalResource("ZoneImages", zoneImages, zoneImageCount, spriteNames);
+        }
+
+        /// <summary>
+        /// create a UI square count for the specified zone
+        /// </summary>
+        private bool CreateUISquareCount(Zone zone, string namePrefix, string text, UITextureAtlas zoneAtlas, ref float top)
+        {
+            // create the UI square count
+            UISquareCount uiSquareCount = _uiSquareCounts[(int)zone];
+            if (!CreateUISquareCount(uiSquareCount, namePrefix, text, ref top))
+            {
+                return false;
+            }
+
+            // set symbol image, default to locked
+            uiSquareCount.symbol.atlas = zoneAtlas;
+            uiSquareCount.symbol.spriteName = UISquareCount.SpriteNameLocked(zone);
+
+            // square count is valid
+            uiSquareCount.valid = true;
+
+            // success
+            return true;
+        }
+
+        /// <summary>
+        /// create a square count row in the specified SquareCountUI
+        /// </summary>
+        private bool CreateUISquareCount(UISquareCount uiSquareCount, string namePrefix, string text, ref float top)
+        {
             // add the symbol sprite
-            squareCountUI.Symbol = AddUIComponent<UISprite>();
-            if (squareCountUI.Symbol == null)
+            uiSquareCount.symbol = AddUIComponent<UISprite>();
+            if (uiSquareCount.symbol == null)
             {
                 Debug.LogError($"Unable to add symbol sprite for {text} on {name}.");
                 return false;
             }
-            squareCountUI.Symbol.name = namePrefix + "Symbol";
-            squareCountUI.Symbol.autoSize = false;
-            squareCountUI.Symbol.size = new Vector2(ItemHeight, ItemHeight);    // width is same as height
-            squareCountUI.Symbol.relativePosition = new Vector3(LeftPadding, top - 2f);  // -2 to align properly with text in labels
-            squareCountUI.Symbol.atlas = atlas;
-            squareCountUI.Symbol.spriteName = spriteName;
-            squareCountUI.Symbol.isVisible = true;
+            uiSquareCount.symbol.name = namePrefix + "Symbol";
+            uiSquareCount.symbol.autoSize = false;
+            uiSquareCount.symbol.size = new Vector2(ItemHeight, ItemHeight);    // width is same as height
+            uiSquareCount.symbol.relativePosition = new Vector3(LeftPadding, top - 2f);  // -2 to align properly with text in labels
+            uiSquareCount.symbol.isVisible = true;
 
             // add the labels
             const float CountWidth = 67f;
             const string DefaultCountText = "0,000,000";
-            if (!CreateLabel(ref squareCountUI.DescriptionLabel, squareCountUI.Symbol,           top, 170f,       ItemHeight, namePrefix + "Description", text            )) return false;
-            if (!CreateLabel(ref squareCountUI.BuiltLabel,       squareCountUI.DescriptionLabel, top, CountWidth, ItemHeight, namePrefix + "Built",       DefaultCountText)) return false;
-            if (!CreateLabel(ref squareCountUI.EmptyLabel,       squareCountUI.BuiltLabel,       top, CountWidth, ItemHeight, namePrefix + "Empty",       DefaultCountText)) return false;
-            if (!CreateLabel(ref squareCountUI.TotalLabel,       squareCountUI.EmptyLabel,       top, CountWidth, ItemHeight, namePrefix + "Total",       DefaultCountText)) return false;
-            squareCountUI.DescriptionLabel.textAlignment = UIHorizontalAlignment.Left;
+            if (!CreateLabel(ref uiSquareCount.description, uiSquareCount.symbol,      top, 170f,       ItemHeight, namePrefix + "Description", text            )) return false;
+            if (!CreateLabel(ref uiSquareCount.built,       uiSquareCount.description, top, CountWidth, ItemHeight, namePrefix + "Built",       DefaultCountText)) return false;
+            if (!CreateLabel(ref uiSquareCount.empty,       uiSquareCount.built,       top, CountWidth, ItemHeight, namePrefix + "Empty",       DefaultCountText)) return false;
+            if (!CreateLabel(ref uiSquareCount.total,       uiSquareCount.empty,       top, CountWidth, ItemHeight, namePrefix + "Total",       DefaultCountText)) return false;
+            uiSquareCount.description.textAlignment = UIHorizontalAlignment.Left;
 
             // increment top for next one
             top += ItemHeight;
@@ -474,7 +500,7 @@ namespace ZoneInfo
             label.textAlignment = UIHorizontalAlignment.Right;
             label.verticalAlignment = UIVerticalAlignment.Middle;
             label.textScale = TextScale;
-            label.textColor = TextColor;
+            label.textColor = TextColorNormal;
             label.autoSize = false;
             label.size = new Vector2(width, height);
             label.relativePosition = new Vector3(priorComponent.relativePosition.x + priorComponent.size.x + 4f, top);
@@ -501,7 +527,7 @@ namespace ZoneInfo
             line.size = new Vector2(label.width, 1f);
             line.relativePosition = new Vector3(1f, label.size.y);
             line.spriteName = "EmptySprite";
-            line.color = TextColor;
+            line.color = TextColorNormal;
             line.isVisible = true;
             
             // success
@@ -522,8 +548,8 @@ namespace ZoneInfo
             }
             checkbox.name = text + "Checkbox";
             checkbox.autoSize = false;
-            checkbox.size = _heading.Symbol.size;
-            checkbox.relativePosition = new Vector3(x, _heading.Symbol.relativePosition.y);
+            checkbox.size = _heading.symbol.size;
+            checkbox.relativePosition = new Vector3(x, _heading.symbol.relativePosition.y);
             checkbox.isVisible = true;
 
             // create label for check box
@@ -539,10 +565,10 @@ namespace ZoneInfo
             label.textAlignment = UIHorizontalAlignment.Left;
             label.verticalAlignment = UIVerticalAlignment.Middle;
             label.textScale = TextScale;
-            label.textColor = TextColor;
+            label.textColor = TextColorNormal;
             label.autoSize = false;
-            label.size = new Vector2(width, _heading.DescriptionLabel.size.y);
-            label.relativePosition = new Vector3(checkbox.relativePosition.x + checkbox.size.x + 4f, _heading.DescriptionLabel.relativePosition.y);
+            label.size = new Vector2(width, _heading.description.size.y);
+            label.relativePosition = new Vector3(checkbox.relativePosition.x + checkbox.size.x + 4f, _heading.description.relativePosition.y);
             label.isVisible = true;
 
             // success
@@ -563,10 +589,29 @@ namespace ZoneInfo
         /// </summary>
         private void ZoneInfoPanel_eventVisibilityChanged(UIComponent component, bool value)
         {
-            // when panel becomes visible, immediately count all
             if (value)
             {
+                // immediately count all
                 _countAll = true;
+            }
+            else
+            {
+                // hide districts,
+                // however if the Districts info view mode or the district drawing tool are active,
+                // they will keep districts shown, even after being hidden here
+                if (DistrictManager.exists)
+                {
+                    DistrictManager.instance.DistrictsVisible = false;
+                }
+
+                // hide zones except if ZoneTool is active,
+                // however if a tool is active that shows zones,
+                // the tool will keep zones shown, even after being hidden here
+                // except that (interestingly) the ZoneTool does not keep zones shown
+                if (TerrainManager.exists && ToolsModifierControl.toolController.CurrentTool.GetType() != typeof(ZoneTool))
+                {
+                    TerrainManager.instance.RenderZones = false;
+                }
             }
         }
 
@@ -575,8 +620,8 @@ namespace ZoneInfo
         /// </summary>
         private void CloseButton_eventClicked(UIComponent component, UIMouseEventParameter eventParam)
         {
-            // toggle panel visibility
-            ZoneInfoLoading.TogglePanelVisibility();
+            // hide the panel
+            ZoneInfoLoading.HidePanel();
         }
 
         /// <summary>
@@ -614,6 +659,16 @@ namespace ZoneInfo
         public void StopUpdate()
         {
             _stopUpdate = true;
+
+            // hide districts and zones so they will not be initially shown if another game is started
+            if (DistrictManager.exists)
+            {
+                DistrictManager.instance.DistrictsVisible = false;
+            }
+            if (TerrainManager.exists)
+            {
+                TerrainManager.instance.RenderZones = false;
+            }
         }
 
         /// <summary>
@@ -639,9 +694,44 @@ namespace ZoneInfo
                 }
 
                 // managers must be ready
-                if (!ZoneManager.exists || !DistrictManager.exists)
+                if (!ZoneManager.exists || !DistrictManager.exists || !InfoManager.exists || !TerrainManager.exists || !BuildingManager.exists)
                 {
                     return;
+                }
+
+                //  show or hide districts
+                DistrictManager instance = DistrictManager.instance;
+                InfoManager.InfoMode currentInfoViewMode = InfoManager.instance.CurrentMode;
+                Type currentToolType = ToolsModifierControl.toolController.CurrentTool.GetType();
+                if (currentInfoViewMode == InfoManager.InfoMode.None && currentToolType == typeof(DefaultTool))
+                {
+                    // no info mode and no tool, show districts
+                    instance.DistrictsVisible = true;
+                }
+                else
+                {
+                    // info view is visible or a tool is selected, hide districts
+                    instance.DistrictsVisible = false;
+                }
+
+                // show or hide zones 
+                if (currentInfoViewMode == InfoManager.InfoMode.None)
+                {
+                    // no info mode, check tool type
+                    if (currentToolType == typeof(NetTool) || currentToolType == typeof(BuildingTool))
+                    {
+                        // leave show/hide status unchanged and allow the tool to control the status
+                    }
+                    else
+                    {
+                        // for other tools (especially the ZoneTool), display zones
+                        TerrainManager.instance.RenderZones = true;
+                    }
+                }
+                else
+                {
+                    // info view is visible, hide zones
+                    TerrainManager.instance.RenderZones = false;
                 }
 
                 // if counting all, reset counters to start over at first zone block
@@ -653,9 +743,6 @@ namespace ZoneInfo
                     countAll = true;
                     _countAll = false;
                 }
-
-                // get DistrictManager
-                DistrictManager instance = DistrictManager.instance;
 
                 // data for the previous building found
                 Quad2 buildingCorners = default;
@@ -721,41 +808,41 @@ namespace ZoneInfo
                                     }
 
                                     // use the square's zone and specialization to determine which SquareCount and subtotal to increment
-                                    int countToIncrement    = -1;
-                                    int subtotalToIncrement = -1;
+                                    Zone countToIncrement    = (Zone)(-1);
+                                    Zone subtotalToIncrement = (Zone)(-1);
                                     switch (zone)
                                     {
                                         case ItemClass.Zone.ResidentialLow:
                                         case ItemClass.Zone.ResidentialHigh:
-                                            if      ((specialization & DistrictPolicies.Specialization.Selfsufficient) != 0) { countToIncrement = SquareType.ResidentialSelfSuff;    }
-                                            else if (zone == ItemClass.Zone.ResidentialLow)                                  { countToIncrement = SquareType.ResidentialGenericLow;  }
-                                            else if (zone == ItemClass.Zone.ResidentialHigh)                                 { countToIncrement = SquareType.ResidentialGenericHigh; }
-                                            subtotalToIncrement = SquareType.ResidentialSubtotal;
+                                            if      ((specialization & DistrictPolicies.Specialization.Selfsufficient) != 0) { countToIncrement = Zone.ResidentialSelfSuff;    }
+                                            else if (zone == ItemClass.Zone.ResidentialLow)                                  { countToIncrement = Zone.ResidentialGenericLow;  }
+                                            else if (zone == ItemClass.Zone.ResidentialHigh)                                 { countToIncrement = Zone.ResidentialGenericHigh; }
+                                            subtotalToIncrement = Zone.ResidentialSubtotal;
                                             break;
 
                                         case ItemClass.Zone.CommercialLow:
                                         case ItemClass.Zone.CommercialHigh:
-                                            if      ((specialization & DistrictPolicies.Specialization.Tourist) != 0) { countToIncrement = SquareType.CommercialTourism;     }
-                                            else if ((specialization & DistrictPolicies.Specialization.Leisure) != 0) { countToIncrement = SquareType.CommercialLeisure;     }
-                                            else if ((specialization & DistrictPolicies.Specialization.Organic) != 0) { countToIncrement = SquareType.CommercialOrganic;     }
-                                            else if (zone == ItemClass.Zone.CommercialLow)                            { countToIncrement = SquareType.CommercialGenericLow;  }
-                                            else if (zone == ItemClass.Zone.CommercialHigh)                           { countToIncrement = SquareType.CommercialGenericHigh; }
-                                            subtotalToIncrement = SquareType.CommercialSubtotal;
+                                            if      ((specialization & DistrictPolicies.Specialization.Tourist) != 0) { countToIncrement = Zone.CommercialTourism;     }
+                                            else if ((specialization & DistrictPolicies.Specialization.Leisure) != 0) { countToIncrement = Zone.CommercialLeisure;     }
+                                            else if ((specialization & DistrictPolicies.Specialization.Organic) != 0) { countToIncrement = Zone.CommercialOrganic;     }
+                                            else if (zone == ItemClass.Zone.CommercialLow)                            { countToIncrement = Zone.CommercialGenericLow;  }
+                                            else if (zone == ItemClass.Zone.CommercialHigh)                           { countToIncrement = Zone.CommercialGenericHigh; }
+                                            subtotalToIncrement = Zone.CommercialSubtotal;
                                             break;
 
                                         case ItemClass.Zone.Industrial:
-                                            if      ((specialization & DistrictPolicies.Specialization.Forest ) != 0) { countToIncrement = SquareType.IndustrialForestry; }
-                                            else if ((specialization & DistrictPolicies.Specialization.Farming) != 0) { countToIncrement = SquareType.IndustrialFarming;  }
-                                            else if ((specialization & DistrictPolicies.Specialization.Ore    ) != 0) { countToIncrement = SquareType.IndustrialOre;      }
-                                            else if ((specialization & DistrictPolicies.Specialization.Oil    ) != 0) { countToIncrement = SquareType.IndustrialOil;      }
-                                            else                                                                      { countToIncrement = SquareType.IndustrialGeneric;  }
-                                            subtotalToIncrement = SquareType.IndustrialSubtotal;
+                                            if      ((specialization & DistrictPolicies.Specialization.Forest ) != 0) { countToIncrement = Zone.IndustrialForestry; }
+                                            else if ((specialization & DistrictPolicies.Specialization.Farming) != 0) { countToIncrement = Zone.IndustrialFarming;  }
+                                            else if ((specialization & DistrictPolicies.Specialization.Ore    ) != 0) { countToIncrement = Zone.IndustrialOre;      }
+                                            else if ((specialization & DistrictPolicies.Specialization.Oil    ) != 0) { countToIncrement = Zone.IndustrialOil;      }
+                                            else                                                                      { countToIncrement = Zone.IndustrialGeneric;  }
+                                            subtotalToIncrement = Zone.IndustrialSubtotal;
                                             break;
 
                                         case ItemClass.Zone.Office:
-                                            if ((specialization & DistrictPolicies.Specialization.Hightech) != 0) { countToIncrement = SquareType.OfficeIT;      }
-                                            else                                                                  { countToIncrement = SquareType.OfficeGeneric; }
-                                            subtotalToIncrement = SquareType.OfficeSubtotal;
+                                            if ((specialization & DistrictPolicies.Specialization.Hightech) != 0) { countToIncrement = Zone.OfficeITCluster; }
+                                            else                                                                  { countToIncrement = Zone.OfficeGeneric;   }
+                                            subtotalToIncrement = Zone.OfficeSubtotal;
                                             break;
 
                                         case ItemClass.Zone.Unzoned:
@@ -796,34 +883,34 @@ namespace ZoneInfo
                                                     switch (buildingSubservice)
                                                     {
                                                         case ItemClass.SubService.ResidentialLowEco:
-                                                        case ItemClass.SubService.ResidentialHighEco:   countToIncrement = SquareType.ResidentialSelfSuff;    subtotalToIncrement = SquareType.ResidentialSubtotal; break;
-                                                        case ItemClass.SubService.ResidentialLow:       countToIncrement = SquareType.ResidentialGenericLow;  subtotalToIncrement = SquareType.ResidentialSubtotal; break;
-                                                        case ItemClass.SubService.ResidentialHigh:      countToIncrement = SquareType.ResidentialGenericHigh; subtotalToIncrement = SquareType.ResidentialSubtotal; break;
+                                                        case ItemClass.SubService.ResidentialHighEco:   countToIncrement = Zone.ResidentialSelfSuff;    subtotalToIncrement = Zone.ResidentialSubtotal; break;
+                                                        case ItemClass.SubService.ResidentialLow:       countToIncrement = Zone.ResidentialGenericLow;  subtotalToIncrement = Zone.ResidentialSubtotal; break;
+                                                        case ItemClass.SubService.ResidentialHigh:      countToIncrement = Zone.ResidentialGenericHigh; subtotalToIncrement = Zone.ResidentialSubtotal; break;
 
-                                                        case ItemClass.SubService.CommercialTourist:    countToIncrement = SquareType.CommercialTourism;      subtotalToIncrement = SquareType.CommercialSubtotal;  break;
-                                                        case ItemClass.SubService.CommercialLeisure:    countToIncrement = SquareType.CommercialLeisure;      subtotalToIncrement = SquareType.CommercialSubtotal;  break;
-                                                        case ItemClass.SubService.CommercialEco:        countToIncrement = SquareType.CommercialOrganic;      subtotalToIncrement = SquareType.CommercialSubtotal;  break;
-                                                        case ItemClass.SubService.CommercialLow:        countToIncrement = SquareType.CommercialGenericLow;   subtotalToIncrement = SquareType.CommercialSubtotal;  break;
-                                                        case ItemClass.SubService.CommercialHigh:       countToIncrement = SquareType.CommercialGenericHigh;  subtotalToIncrement = SquareType.CommercialSubtotal;  break;
+                                                        case ItemClass.SubService.CommercialTourist:    countToIncrement = Zone.CommercialTourism;      subtotalToIncrement = Zone.CommercialSubtotal;  break;
+                                                        case ItemClass.SubService.CommercialLeisure:    countToIncrement = Zone.CommercialLeisure;      subtotalToIncrement = Zone.CommercialSubtotal;  break;
+                                                        case ItemClass.SubService.CommercialEco:        countToIncrement = Zone.CommercialOrganic;      subtotalToIncrement = Zone.CommercialSubtotal;  break;
+                                                        case ItemClass.SubService.CommercialLow:        countToIncrement = Zone.CommercialGenericLow;   subtotalToIncrement = Zone.CommercialSubtotal;  break;
+                                                        case ItemClass.SubService.CommercialHigh:       countToIncrement = Zone.CommercialGenericHigh;  subtotalToIncrement = Zone.CommercialSubtotal;  break;
 
                                                         case ItemClass.SubService.PlayerIndustryForestry:
-                                                        case ItemClass.SubService.IndustrialForestry:   countToIncrement = SquareType.IndustrialForestry;     subtotalToIncrement = SquareType.IndustrialSubtotal;  break;
+                                                        case ItemClass.SubService.IndustrialForestry:   countToIncrement = Zone.IndustrialForestry;     subtotalToIncrement = Zone.IndustrialSubtotal;  break;
                                                         case ItemClass.SubService.PlayerIndustryFarming:
-                                                        case ItemClass.SubService.IndustrialFarming:    countToIncrement = SquareType.IndustrialFarming;      subtotalToIncrement = SquareType.IndustrialSubtotal;  break;
+                                                        case ItemClass.SubService.IndustrialFarming:    countToIncrement = Zone.IndustrialFarming;      subtotalToIncrement = Zone.IndustrialSubtotal;  break;
                                                         case ItemClass.SubService.PlayerIndustryOre:
-                                                        case ItemClass.SubService.IndustrialOre:        countToIncrement = SquareType.IndustrialOre;          subtotalToIncrement = SquareType.IndustrialSubtotal;  break;
+                                                        case ItemClass.SubService.IndustrialOre:        countToIncrement = Zone.IndustrialOre;          subtotalToIncrement = Zone.IndustrialSubtotal;  break;
                                                         case ItemClass.SubService.PlayerIndustryOil:
-                                                        case ItemClass.SubService.IndustrialOil:        countToIncrement = SquareType.IndustrialOil;          subtotalToIncrement = SquareType.IndustrialSubtotal;  break;
-                                                        case ItemClass.SubService.IndustrialGeneric:    countToIncrement = SquareType.IndustrialGeneric;      subtotalToIncrement = SquareType.IndustrialSubtotal;  break;
+                                                        case ItemClass.SubService.IndustrialOil:        countToIncrement = Zone.IndustrialOil;          subtotalToIncrement = Zone.IndustrialSubtotal;  break;
+                                                        case ItemClass.SubService.IndustrialGeneric:    countToIncrement = Zone.IndustrialGeneric;      subtotalToIncrement = Zone.IndustrialSubtotal;  break;
 
-                                                        case ItemClass.SubService.OfficeHightech:       countToIncrement = SquareType.OfficeIT;               subtotalToIncrement = SquareType.OfficeSubtotal;      break;
-                                                        case ItemClass.SubService.OfficeGeneric:        countToIncrement = SquareType.OfficeGeneric;          subtotalToIncrement = SquareType.OfficeSubtotal;      break;
+                                                        case ItemClass.SubService.OfficeHightech:       countToIncrement = Zone.OfficeITCluster;        subtotalToIncrement = Zone.OfficeSubtotal;      break;
+                                                        case ItemClass.SubService.OfficeGeneric:        countToIncrement = Zone.OfficeGeneric;          subtotalToIncrement = Zone.OfficeSubtotal;      break;
 
                                                         default:
                                                             // building is not a subservice being counted
                                                             // building could be a service building, park, or other structure that causes the square to be unzoned
                                                             // this is not an error, just count as unzoned
-                                                            countToIncrement = SquareType.Unzoned;
+                                                            countToIncrement = Zone.Unzoned;
                                                             break;
                                                     }
                                                 }
@@ -831,13 +918,13 @@ namespace ZoneInfo
                                                 {
                                                     // no building found even though zone block indicates occupied
                                                     // this is not an error, just count as unzoned
-                                                    countToIncrement = SquareType.Unzoned;
+                                                    countToIncrement = Zone.Unzoned;
                                                 }
                                             }
                                             else
                                             {
                                                 // unoccupied always gets counted as unzoned
-                                                countToIncrement = SquareType.Unzoned;
+                                                countToIncrement = Zone.Unzoned;
                                             }
                                             break;
 
@@ -848,9 +935,9 @@ namespace ZoneInfo
                                     }
 
                                     // increment the square count (if valid), subtotal (if valid), and total (always)
-                                    if (SquareType.IsValid(countToIncrement   )) _squareCountTemp[countToIncrement   ].Increment(districtID, occupied);
-                                    if (SquareType.IsValid(subtotalToIncrement)) _squareCountTemp[subtotalToIncrement].Increment(districtID, occupied);
-                                                                                 _squareCountTemp[SquareType.Total   ].Increment(districtID, occupied);
+                                    if ((int)countToIncrement    != -1) _tempSquareCounts[(int)countToIncrement   ].Increment(districtID, occupied);
+                                    if ((int)subtotalToIncrement != -1) _tempSquareCounts[(int)subtotalToIncrement].Increment(districtID, occupied);
+                                                                        _tempSquareCounts[(int)Zone.Total         ].Increment(districtID, occupied);
                                 }
                             }
                         }
@@ -861,9 +948,9 @@ namespace ZoneInfo
                 if (_blockCounter >= blocks.Length)
                 {
                     // copy temp to final
-                    for (int squareType = 0; squareType < SquareType.Count; squareType++)
+                    foreach (Zone zone in Zones)
                     {
-                        _squareCountFinal[squareType].Copy(_squareCountTemp[squareType]);
+                        _finalSquareCounts[(int)zone].Copy(_tempSquareCounts[(int)zone]);
                     }
 
                     // display square counts
@@ -989,24 +1076,161 @@ namespace ZoneInfo
         /// </summary>
         private void DisplaySquareCounts()
         {
+            // manager must be ready
+            if (!UnlockManager.exists)
+            {
+                return;
+            }
+
+            // set district dropdown
+            UnlockManager instance = UnlockManager.instance;
+            if (instance.Unlocked(UnlockManager.Feature.Districts))
+            {
+                if (!_district.isEnabled)
+                {
+                    _district.isEnabled = true;
+                    _district.Invalidate();
+                }
+            }
+            else
+            {
+                if (_district.isEnabled)
+                {
+                    _district.isEnabled = false;
+                    _district.Invalidate();
+                }
+            }
+
             // get whether or not to format as percent
             bool formatAsPercent = IsCheckBoxChecked(_percentCheckbox);
 
             // get totals for the selected district
             int selectedDistrict = _district.selectedDistrictID;
-            SquareCount totalSquareCount = _squareCountFinal[SquareType.Total];
-            int totalBuilt = totalSquareCount.Built[selectedDistrict];
-            int totalEmpty = totalSquareCount.Empty[selectedDistrict];
-            int totalTotal = totalSquareCount.Total[selectedDistrict];
+            SquareCount totalSquareCount = _finalSquareCounts[(int)Zone.Total];
+            int totalBuilt = totalSquareCount.built[selectedDistrict];
+            int totalEmpty = totalSquareCount.empty[selectedDistrict];
+            int totalTotal = totalSquareCount.total[selectedDistrict];
 
-            // display each square count for the selected district
-            for (int squareType = 0; squareType < SquareType.Count; squareType++)
+            // do each zone
+            foreach (Zone zone in Zones)
             {
-                SquareCountUI countUI = _squareCountUI[squareType];
-                SquareCount finalSquareCount = _squareCountFinal[squareType];
-                if (countUI.BuiltLabel != null) countUI.BuiltLabel.text = FormatValue(formatAsPercent, finalSquareCount.Built[selectedDistrict], totalBuilt);
-                if (countUI.EmptyLabel != null) countUI.EmptyLabel.text = FormatValue(formatAsPercent, finalSquareCount.Empty[selectedDistrict], totalEmpty);
-                if (countUI.TotalLabel != null) countUI.TotalLabel.text = FormatValue(formatAsPercent, finalSquareCount.Total[selectedDistrict], totalTotal);
+                // display only if UI is valid
+                UISquareCount uiSquareCount = _uiSquareCounts[(int)zone];
+                if (uiSquareCount.valid)
+                {
+                    // display values
+                    SquareCount finalSquareCount = _finalSquareCounts[(int)zone];
+                    uiSquareCount.built.text = FormatValue(formatAsPercent, finalSquareCount.built[selectedDistrict], totalBuilt);
+                    uiSquareCount.empty.text = FormatValue(formatAsPercent, finalSquareCount.empty[selectedDistrict], totalEmpty);
+                    uiSquareCount.total.text = FormatValue(formatAsPercent, finalSquareCount.total[selectedDistrict], totalTotal);
+
+                    // get whether row should be shown normal or locked
+                    bool showNormal = false;
+                    if (finalSquareCount.total[selectedDistrict] > 0)
+                    {
+                        // Total is greater than zero, show normal
+                        showNormal = true;
+                    }
+                    else
+                    {
+                        // for generic zones, check if zone is unlocked
+                        // for specialized zones, check if district policy is unlocked
+                        // for total, check if zoning feature is unlocked
+                        // if zone/policy/feature is unlocked, show normal
+                        switch (zone)
+                        {
+                            case Zone.ResidentialGenericLow:
+                                showNormal = instance.Unlocked(ItemClass.Zone.ResidentialLow);
+                                break;
+                            case Zone.ResidentialGenericHigh:
+                                showNormal = instance.Unlocked(ItemClass.Zone.ResidentialHigh);
+                                break;
+                            case Zone.ResidentialSelfSuff:
+                                showNormal = instance.Unlocked(DistrictPolicies.Policies.Selfsufficient);
+                                break;
+                            case Zone.ResidentialSubtotal:
+                                showNormal = instance.Unlocked(ItemClass.Zone.ResidentialLow) || 
+                                             instance.Unlocked(ItemClass.Zone.ResidentialHigh) || 
+                                             instance.Unlocked(DistrictPolicies.Policies.Selfsufficient);
+                                break;
+
+                            case Zone.CommercialGenericLow:
+                                showNormal = instance.Unlocked(ItemClass.Zone.CommercialLow);
+                                break;
+                            case Zone.CommercialGenericHigh:
+                                showNormal = instance.Unlocked(ItemClass.Zone.CommercialHigh);
+                                break;
+                            case Zone.CommercialTourism:
+                                showNormal = instance.Unlocked(DistrictPolicies.Policies.Tourist);
+                                break;
+                            case Zone.CommercialLeisure:
+                                showNormal = instance.Unlocked(DistrictPolicies.Policies.Leisure);
+                                break;
+                            case Zone.CommercialOrganic:
+                                showNormal = instance.Unlocked(DistrictPolicies.Policies.Organic);
+                                break;
+                            case Zone.CommercialSubtotal:
+                                showNormal = instance.Unlocked(ItemClass.Zone.CommercialLow) ||
+                                             instance.Unlocked(ItemClass.Zone.CommercialHigh) ||
+                                             instance.Unlocked(DistrictPolicies.Policies.Tourist) ||
+                                             instance.Unlocked(DistrictPolicies.Policies.Leisure) ||
+                                             instance.Unlocked(DistrictPolicies.Policies.Organic);
+                                break;
+
+                            case Zone.IndustrialGeneric:
+                                showNormal = instance.Unlocked(ItemClass.Zone.Industrial);
+                                break;
+                            case Zone.IndustrialForestry:
+                                showNormal = instance.Unlocked(DistrictPolicies.Policies.Forest);
+                                break;
+                            case Zone.IndustrialFarming:
+                                showNormal = instance.Unlocked(DistrictPolicies.Policies.Farming);
+                                break;
+                            case Zone.IndustrialOre:
+                                showNormal = instance.Unlocked(DistrictPolicies.Policies.Ore);
+                                break;
+                            case Zone.IndustrialOil:
+                                showNormal = instance.Unlocked(DistrictPolicies.Policies.Oil);
+                                break;
+                            case Zone.IndustrialSubtotal:
+                                showNormal = instance.Unlocked(ItemClass.Zone.Industrial) ||
+                                             instance.Unlocked(DistrictPolicies.Policies.Forest) ||
+                                             instance.Unlocked(DistrictPolicies.Policies.Farming) ||
+                                             instance.Unlocked(DistrictPolicies.Policies.Ore) ||
+                                             instance.Unlocked(DistrictPolicies.Policies.Oil);
+                                break;
+
+                            case Zone.OfficeGeneric:
+                                showNormal = instance.Unlocked(ItemClass.Zone.Office);
+                                break;
+                            case Zone.OfficeITCluster:
+                                showNormal = instance.Unlocked(DistrictPolicies.Policies.Hightech);
+                                break;
+                            case Zone.OfficeSubtotal:
+                                showNormal = instance.Unlocked(ItemClass.Zone.Office) ||
+                                             instance.Unlocked(DistrictPolicies.Policies.Hightech);
+                                break;
+
+                            case Zone.Unzoned:
+                                showNormal = instance.Unlocked(ItemClass.Zone.Unzoned);
+                                break;
+
+                            case Zone.Total:
+                                showNormal = instance.Unlocked(UnlockManager.Feature.Zoning);
+                                break;
+                        }
+                    }
+
+                    // set symbol sprite
+                    uiSquareCount.symbol.spriteName = (showNormal ? UISquareCount.SpriteNameNormal(zone) : UISquareCount.SpriteNameLocked(zone));
+
+                    // set text color
+                    Color32 textColor = (showNormal ? TextColorNormal : TextColorLocked);
+                    uiSquareCount.description.textColor = textColor;
+                    uiSquareCount.built.textColor = textColor;
+                    uiSquareCount.empty.textColor = textColor;
+                    uiSquareCount.total.textColor = textColor;
+                }
             }
 
             // counts were refreshed
@@ -1038,9 +1262,9 @@ namespace ZoneInfo
         /// </summary>
         private void ResetSquareCounts()
         {
-            for (int squareType = 0; squareType < SquareType.Count; squareType++)
+            foreach (Zone zone in Zones)
             {
-                _squareCountTemp[squareType].Reset();
+                _tempSquareCounts[(int)zone].Reset();
             }
         }
 
