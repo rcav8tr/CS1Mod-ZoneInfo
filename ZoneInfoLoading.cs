@@ -120,17 +120,14 @@ namespace ZoneInfo
                 // destroy objects that were added directly, this also destroys all contained objects
                 // must do this explicitly because loading a saved game from the Pause Menu
                 // does not destroy the objects implicitly like returning to the Main Menu to load a saved game
-                // also, save button and panel position
                 if (_activationButton != null)
                 {
-                    ZoneInfoConfiguration.SaveButtonPosition(_activationButton.relativePosition);
                     UnityEngine.Object.Destroy(_activationButton);
                     _activationButton = null;
                 }
                 if (_infoPanel != null)
                 {
                     _infoPanel.StopUpdate();    // try to stop update loop
-                    ZoneInfoConfiguration.SavePanelPosition(_infoPanel.relativePosition);
                     UnityEngine.Object.Destroy(_infoPanel);
                     _infoPanel = null;
                 }

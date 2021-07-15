@@ -382,6 +382,7 @@ namespace ZoneInfo
                 dragHandle.name = "DragHandle";
                 dragHandle.relativePosition = Vector3.zero;
                 dragHandle.size = new Vector3(size.x, 40f);
+                dragHandle.eventMouseUp += DragHandle_eventMouseUp;
 
                 // make sure drag handle is in front of icon and title
                 // make sure close button is in front of drag handle
@@ -395,6 +396,12 @@ namespace ZoneInfo
             {
                 Debug.LogException(ex);
             }
+        }
+
+        private void DragHandle_eventMouseUp(UIComponent component, UIMouseEventParameter eventParam)
+        {
+            // save position
+            ZoneInfoConfiguration.SavePanelPosition(relativePosition);
         }
 
         /// <summary>

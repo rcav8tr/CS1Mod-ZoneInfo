@@ -61,11 +61,18 @@ namespace ZoneInfo
                 dragHandle.relativePosition = Vector3.zero;
                 dragHandle.size = size;
                 dragHandle.tooltip = "Zone Info";
+                dragHandle.eventMouseUp += DragHandle_eventMouseUp;
             }
             catch (Exception ex)
             {
                 Debug.LogException(ex);
             }
+        }
+
+        private void DragHandle_eventMouseUp(UIComponent component, UIMouseEventParameter eventParam)
+        {
+            // save position
+            ZoneInfoConfiguration.SaveButtonPosition(relativePosition);
         }
 
         /// <summary>
