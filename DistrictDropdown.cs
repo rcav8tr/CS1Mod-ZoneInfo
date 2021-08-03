@@ -276,7 +276,7 @@ namespace ZoneInfo
         /// </summary>
         private void UpdateDisabledLabel()
         {
-            _disabledLabel.text = DistrictHeading + "\n    " + selectedDistrictName;
+            _disabledLabel.text = DistrictHeading + Environment.NewLine + "    " + selectedDistrictName;
         }
 
         /// <summary>

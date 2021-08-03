@@ -150,6 +150,8 @@ namespace ZoneInfo
         private UILabel  _countLabel;
         private UISprite _percentCheckbox;
         private UILabel  _percentLabel;
+        private UISprite _includeUnzonedCheckbox;
+        private UILabel  _includeUnzonedLabel;
         private UIFont _defaultFont;
 
         // common UI properties
@@ -235,8 +237,8 @@ namespace ZoneInfo
                 if (!CreateLine(_heading.total)) return;
 
                 // create two checkboxes left of the heading
-                if (!CreateCheckbox(ref _countCheckbox, ref _countLabel, "Count", 16f, 50f)) return;
-                if (!CreateCheckbox(ref _percentCheckbox, ref _percentLabel, "Percent", _countLabel.relativePosition.x + _countLabel.size.x + LeftPadding, 70f)) return;
+                if (!CreateCheckbox(ref _countCheckbox, ref _countLabel, "Count", _heading, 16f, 50f)) return;
+                if (!CreateCheckbox(ref _percentCheckbox, ref _percentLabel, "Percent", _heading, _countLabel.relativePosition.x + _countLabel.size.x + LeftPadding, 70f)) return;
 
                 // initialize check boxes so that Count is checked by default
                 SetCheckBox(_countCheckbox, true);
@@ -306,6 +308,12 @@ namespace ZoneInfo
 
                 top += SectionSpacing;
                 if (dlcBaseGame   ) { if (!CreateUISquareCount(Zone.Total,                  "Total",               "Total",                    zoneAtlas, ref top)) return; }
+
+                // add the Include Unzoned checkbox, but hidden
+                if (!CreateCheckbox(ref _includeUnzonedCheckbox, ref _includeUnzonedLabel, "Include", _uiSquareCounts[(int)Zone.Unzoned], 110f, 60f)) return;
+                SetCheckBox(_includeUnzonedCheckbox, true);
+                _includeUnzonedCheckbox.isVisible = false;
+                _includeUnzonedLabel.isVisible = false;
 
                 // set panel size based on size and position of total row
                 UISquareCount totalRow = _uiSquareCounts[(int)Zone.Total];
@@ -544,7 +552,7 @@ namespace ZoneInfo
         /// <summary>
         /// create a check box and corresponding label
         /// </summary>
-        private bool CreateCheckbox(ref UISprite checkbox, ref UILabel label, string text, float x, float width)
+        private bool CreateCheckbox(ref UISprite checkbox, ref UILabel label, string text, UISquareCount createRelativeTo, float x, float width)
         {
             // create check box
             checkbox = AddUIComponent<UISprite>();
@@ -555,8 +563,8 @@ namespace ZoneInfo
             }
             checkbox.name = text + "Checkbox";
             checkbox.autoSize = false;
-            checkbox.size = _heading.symbol.size;
-            checkbox.relativePosition = new Vector3(x, _heading.symbol.relativePosition.y);
+            checkbox.size = createRelativeTo.symbol.size;
+            checkbox.relativePosition = new Vector3(x, createRelativeTo.symbol.relativePosition.y);
             checkbox.isVisible = true;
 
             // create label for check box
@@ -574,8 +582,8 @@ namespace ZoneInfo
             label.textScale = TextScale;
             label.textColor = TextColorNormal;
             label.autoSize = false;
-            label.size = new Vector2(width, _heading.description.size.y);
-            label.relativePosition = new Vector3(checkbox.relativePosition.x + checkbox.size.x + 4f, _heading.description.relativePosition.y);
+            label.size = new Vector2(width, createRelativeTo.description.size.y);
+            label.relativePosition = new Vector3(checkbox.relativePosition.x + checkbox.size.x + 4f, createRelativeTo.description.relativePosition.y);
             label.isVisible = true;
 
             // success
@@ -632,13 +640,25 @@ namespace ZoneInfo
         }
 
         /// <summary>
-        /// handle clicks on check boxes
+        /// handle clicks on count and percent check boxes
         /// </summary>
         private void CheckBox_eventClicked(UIComponent component, UIMouseEventParameter eventParam)
         {
             // regardless of which one was clicked, toggle both check boxes
             SetCheckBox(_countCheckbox,   !IsCheckBoxChecked(_countCheckbox  ));
             SetCheckBox(_percentCheckbox, !IsCheckBoxChecked(_percentCheckbox));
+
+            // redisplay counts
+            _displayCounts = true;
+        }
+
+        /// <summary>
+        /// handle click on Include Unzoned checkbox
+        /// </summary>
+        private void _includeUnzonedCheckbox_eventClicked(UIComponent component, UIMouseEventParameter eventParam)
+        {
+            // toggle check box
+            SetCheckBox(_includeUnzonedCheckbox, !IsCheckBoxChecked(_includeUnzonedCheckbox));
 
             // redisplay counts
             _displayCounts = true;
@@ -1111,12 +1131,32 @@ namespace ZoneInfo
             // get whether or not to format as percent
             bool formatAsPercent = IsCheckBoxChecked(_percentCheckbox);
 
+            // when Unzoned feature is unlocked, enable Include Unzoned, but only once
+            if (instance.Unlocked(ItemClass.Zone.Unzoned) && _includeUnzonedCheckbox.isVisible == false)
+            {
+                _includeUnzonedCheckbox.isVisible = true;
+                _includeUnzonedLabel.isVisible = true;
+                SetCheckBox(_includeUnzonedCheckbox, true);
+                _includeUnzonedCheckbox.eventClicked += _includeUnzonedCheckbox_eventClicked;
+                _includeUnzonedLabel.eventClicked += _includeUnzonedCheckbox_eventClicked;
+            }
+
             // get totals for the selected district
             int selectedDistrict = _district.selectedDistrictID;
             SquareCount totalSquareCount = _finalSquareCounts[(int)Zone.Total];
             int totalBuilt = totalSquareCount.built[selectedDistrict];
             int totalEmpty = totalSquareCount.empty[selectedDistrict];
             int totalTotal = totalSquareCount.total[selectedDistrict];
+
+            // if Include Unzoned is unchecked, then subtract Unzoned
+            bool includeUnzoned = IsCheckBoxChecked(_includeUnzonedCheckbox);
+            if (!includeUnzoned)
+            {
+                SquareCount unzonedSquareCount = _finalSquareCounts[(int)Zone.Unzoned];
+                totalBuilt -= unzonedSquareCount.built[selectedDistrict];
+                totalEmpty -= unzonedSquareCount.empty[selectedDistrict];
+                totalTotal -= unzonedSquareCount.total[selectedDistrict];
+            }
 
             // do each zone
             foreach (Zone zone in Zones)
@@ -1127,9 +1167,24 @@ namespace ZoneInfo
                 {
                     // display values
                     SquareCount finalSquareCount = _finalSquareCounts[(int)zone];
-                    uiSquareCount.built.text = FormatValue(formatAsPercent, finalSquareCount.built[selectedDistrict], totalBuilt);
-                    uiSquareCount.empty.text = FormatValue(formatAsPercent, finalSquareCount.empty[selectedDistrict], totalEmpty);
-                    uiSquareCount.total.text = FormatValue(formatAsPercent, finalSquareCount.total[selectedDistrict], totalTotal);
+                    if (zone == Zone.Unzoned && !includeUnzoned)
+                    {
+                        uiSquareCount.built.text = "---";
+                        uiSquareCount.empty.text = "---";
+                        uiSquareCount.total.text = "---";
+                    }
+                    else if (zone == Zone.Total && !includeUnzoned)
+                    {
+                        uiSquareCount.built.text = FormatValue(formatAsPercent, totalBuilt, totalBuilt);
+                        uiSquareCount.empty.text = FormatValue(formatAsPercent, totalEmpty, totalEmpty);
+                        uiSquareCount.total.text = FormatValue(formatAsPercent, totalTotal, totalTotal);
+                    }
+                    else
+                    {
+                        uiSquareCount.built.text = FormatValue(formatAsPercent, finalSquareCount.built[selectedDistrict], totalBuilt);
+                        uiSquareCount.empty.text = FormatValue(formatAsPercent, finalSquareCount.empty[selectedDistrict], totalEmpty);
+                        uiSquareCount.total.text = FormatValue(formatAsPercent, finalSquareCount.total[selectedDistrict], totalTotal);
+                    }
 
                     // get whether row should be shown normal or locked
                     bool showNormal = false;
