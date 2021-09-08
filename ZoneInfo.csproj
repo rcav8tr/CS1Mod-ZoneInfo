@@ -58,6 +58,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DistrictDropdown.cs" />
+    <Compile Include="LogUtil.cs" />
     <Compile Include="ZoneInfoActivationButton.cs" />
     <Compile Include="TextureUtil.cs" />
     <Compile Include="ZoneInfo.cs" />

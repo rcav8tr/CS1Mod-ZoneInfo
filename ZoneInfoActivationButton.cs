@@ -34,14 +34,14 @@ namespace ZoneInfo
                 // set properties
                 name = "ZoneInfoActivationButton";
                 opacity = 1f;
-                size = new Vector2(46f, 46f);
+                size = new Vector2(38f, 38f);
                 isVisible = true;
 
                 // get the atlas of activation button images
                 UITextureAtlas activationButtonImages = GetActivationButtonAtlas();
                 if (activationButtonImages == null)
                 {
-                    Debug.LogError($"Unable to get atlas of activation button images.");
+                    LogUtil.LogError($"Unable to get atlas of activation button images.");
                     return;
                 }
                 atlas = activationButtonImages;
@@ -54,7 +54,7 @@ namespace ZoneInfo
                 UIDragHandle dragHandle = AddUIComponent<UIDragHandle>();
                 if (dragHandle == null)
                 {
-                    Debug.LogError($"Unable to create drag handle on [{name}].");
+                    LogUtil.LogError($"Unable to create drag handle on [{name}].");
                     return;
                 }
                 dragHandle.name = "DragHandle";
@@ -65,7 +65,7 @@ namespace ZoneInfo
             }
             catch (Exception ex)
             {
-                Debug.LogException(ex);
+                LogUtil.LogException(ex);
             }
         }
 
@@ -94,7 +94,7 @@ namespace ZoneInfo
             Texture2D activationButtonImages = TextureUtil.GetDllResource(resourceName, 184, 46);
             if (activationButtonImages == null)
             {
-                Debug.LogError($"Unable to get activation button image resource.");
+                LogUtil.LogError($"Unable to get activation button image resource.");
                 return null;
             }
 

@@ -34,7 +34,7 @@ namespace ZoneInfo
                     _activationButton = (ZoneInfoActivationButton)uiView.AddUIComponent(typeof(ZoneInfoActivationButton));
                     if (_activationButton == null)
                     {
-                        Debug.LogError($"Unable to create activation button on main view.");
+                        LogUtil.LogError($"Unable to create activation button on main view.");
                         return;
                     }
 
@@ -48,7 +48,7 @@ namespace ZoneInfo
                     _infoPanel = (ZoneInfoPanel)uiView.AddUIComponent(typeof(ZoneInfoPanel));
                     if (_infoPanel == null)
                     {
-                        Debug.LogError($"Unable to create info panel on main view.");
+                        LogUtil.LogError($"Unable to create info panel on main view.");
                         return;
                     }
 
@@ -61,7 +61,7 @@ namespace ZoneInfo
             }
             catch (Exception ex)
             {
-                Debug.LogException(ex);
+                LogUtil.LogException(ex);
             }
         }
 
@@ -134,7 +134,7 @@ namespace ZoneInfo
             }
             catch (Exception ex)
             {
-                Debug.LogException(ex);
+                LogUtil.LogException(ex);
             }
         }
     }

@@ -204,7 +204,7 @@ namespace ZoneInfo
                 _district = AddUIComponent<DistrictDropdown>();
                 if (_district == null || !_district.initialized)
                 {
-                    Debug.LogError($"Unable to create district dropdown on panel [{name}].");
+                    LogUtil.LogError($"Unable to create district dropdown on panel [{name}].");
                     return;
                 }
                 _district.name = "DistrictPanel";
@@ -254,7 +254,7 @@ namespace ZoneInfo
                 UITextureAtlas zoneAtlas = GetZoneAtlas();
                 if (zoneAtlas == null)
                 {
-                    Debug.LogError($"Unable to get atlas of zone images.");
+                    LogUtil.LogError($"Unable to get atlas of zone images.");
                     return;
                 }
 
@@ -326,7 +326,7 @@ namespace ZoneInfo
                 UITextureAtlas activationButtonImages = ZoneInfoActivationButton.GetActivationButtonAtlas();
                 if (activationButtonImages == null)
                 {
-                    Debug.LogError($"Unable to get atlas of activation button images.");
+                    LogUtil.LogError($"Unable to get atlas of activation button images.");
                     return;
                 }
 
@@ -334,7 +334,7 @@ namespace ZoneInfo
                 UISprite panelIcon = AddUIComponent<UISprite>();
                 if (panelIcon == null)
                 {
-                    Debug.LogError($"Unable to create icon on panel [{name}].");
+                    LogUtil.LogError($"Unable to create icon on panel [{name}].");
                     return;
                 }
                 panelIcon.name = "Icon";
@@ -349,7 +349,7 @@ namespace ZoneInfo
                 UILabel title = AddUIComponent<UILabel>();
                 if (title == null)
                 {
-                    Debug.LogError($"Unable to create title label on [{name}].");
+                    LogUtil.LogError($"Unable to create title label on [{name}].");
                     return;
                 }
                 title.name = "Title";
@@ -367,7 +367,7 @@ namespace ZoneInfo
                 UIButton closeButton = AddUIComponent<UIButton>();
                 if (closeButton == null)
                 {
-                    Debug.LogError($"Unable to create close button on panel [{name}].");
+                    LogUtil.LogError($"Unable to create close button on panel [{name}].");
                     return;
                 }
                 closeButton.name = "Close";
@@ -384,7 +384,7 @@ namespace ZoneInfo
                 UIDragHandle dragHandle = AddUIComponent<UIDragHandle>();
                 if (dragHandle == null)
                 {
-                    Debug.LogError($"Unable to create drag handle on [{name}].");
+                    LogUtil.LogError($"Unable to create drag handle on [{name}].");
                     return;
                 }
                 dragHandle.name = "DragHandle";
@@ -402,7 +402,7 @@ namespace ZoneInfo
             }
             catch (Exception ex)
             {
-                Debug.LogException(ex);
+                LogUtil.LogException(ex);
             }
         }
 
@@ -423,7 +423,7 @@ namespace ZoneInfo
             Texture2D zoneImages = TextureUtil.GetDllResource(resourceName, zoneImageCount * 40, 40);
             if (zoneImages == null)
             {
-                Debug.LogError($"Unable to get zone image resource.");
+                LogUtil.LogError($"Unable to get zone image resource.");
                 return null;
             }
 
@@ -473,7 +473,7 @@ namespace ZoneInfo
             uiSquareCount.symbol = AddUIComponent<UISprite>();
             if (uiSquareCount.symbol == null)
             {
-                Debug.LogError($"Unable to add symbol sprite for {text} on {name}.");
+                LogUtil.LogError($"Unable to add symbol sprite for {text} on {name}.");
                 return false;
             }
             uiSquareCount.symbol.name = namePrefix + "Symbol";
@@ -506,7 +506,7 @@ namespace ZoneInfo
             label = AddUIComponent<UILabel>();
             if (label == null)
             {
-                Debug.LogError($"Unable to add {name} label on {name}.");
+                LogUtil.LogError($"Unable to add {name} label on {name}.");
                 return false;
             }
             label.name = name;
@@ -534,7 +534,7 @@ namespace ZoneInfo
             UISprite line = label.AddUIComponent<UISprite>();
             if (line == null)
             {
-                Debug.LogError($"Unable to create line under [{label.name}] on [{name}].");
+                LogUtil.LogError($"Unable to create line under [{label.name}] on [{name}].");
                 return false;
             }
             line.name = label.name + "Line";
@@ -558,7 +558,7 @@ namespace ZoneInfo
             checkbox = AddUIComponent<UISprite>();
             if (checkbox == null)
             {
-                Debug.LogError($"Unable to create {text} checkbox sprite on {name}.");
+                LogUtil.LogError($"Unable to create {text} checkbox sprite on {name}.");
                 return false;
             }
             checkbox.name = text + "Checkbox";
@@ -571,7 +571,7 @@ namespace ZoneInfo
             label = AddUIComponent<UILabel>();
             if (label == null)
             {
-                Debug.LogError($"Unable to create {text} checkbox label on {name}.");
+                LogUtil.LogError($"Unable to create {text} checkbox label on {name}.");
                 return false;
             }
             label.name = text + "Label";
@@ -995,7 +995,7 @@ namespace ZoneInfo
             }
             catch (Exception ex)
             {
-                Debug.LogException(ex);
+                LogUtil.LogException(ex);
             }
         }
 
@@ -1076,7 +1076,7 @@ namespace ZoneInfo
                     // check for error (e.g. circular reference)
                     if (++buildingCounter >= BuildingManager.MAX_BUILDING_COUNT)
                     {
-                        Debug.LogError("Invalid list detected!" + Environment.NewLine + Environment.StackTrace);
+                        LogUtil.LogError("Invalid list detected!" + Environment.NewLine + Environment.StackTrace);
                         break;
                     }
                 }

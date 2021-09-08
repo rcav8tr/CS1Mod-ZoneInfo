@@ -23,7 +23,7 @@ namespace ZoneInfo
                 Assembly assembly = Assembly.GetExecutingAssembly();
                 if (assembly == null)
                 {
-                    Debug.LogError($"Error getting DLL resource [{resourceName}]: unable to get executing assembly.");
+                    LogUtil.LogError($"Error getting DLL resource [{resourceName}]: unable to get executing assembly.");
                     return null;
                 }
 
@@ -32,7 +32,7 @@ namespace ZoneInfo
                 {
                     if (stream == null)
                     {
-                        Debug.LogError($"Error getting DLL resource [{resourceName}]: unable to get resource stream.");
+                        LogUtil.LogError($"Error getting DLL resource [{resourceName}]: unable to get resource stream.");
                         return null;
                     }
 
@@ -51,7 +51,7 @@ namespace ZoneInfo
                         Texture2D texture = new Texture2D(width, height, TextureFormat.ARGB32, false);
                         if (!texture.LoadImage(resource))
                         {
-                            Debug.LogError($"Error getting DLL resource [{resourceName}]: unable to load image into texture.");
+                            LogUtil.LogError($"Error getting DLL resource [{resourceName}]: unable to load image into texture.");
                             return null;
                         }
 
@@ -62,7 +62,7 @@ namespace ZoneInfo
             }
             catch (Exception ex)
             {
-                Debug.LogException(ex);
+                LogUtil.LogException(ex);
                 return null;
             }
         }
@@ -91,7 +91,7 @@ namespace ZoneInfo
             UITextureAtlas atlas = ScriptableObject.CreateInstance<UITextureAtlas>();
             if (atlas == null)
             {
-                Debug.LogError($"Unable to create new atlas.");
+                LogUtil.LogError($"Unable to create new atlas.");
                 return null;
             }
             atlas.name = atlasName;
