@@ -1,0 +1,55 @@
+Display number of squares by zone type.
+
+[img=https://i.imgur.com/f2iRAPU.gif]
+
+[h1]Detailed Description[/h1]
+A Zone Info button is added to the main screen.  To show the Zones panel, click the Zone Info button.  To hide the Zones panel, click the Zone Info button again or click the Close button.  The Zone Info button and Zones panel can be moved and the positions will be remembered between games.
+
+The Zones panel shows the squares built, empty, and total for each zone type.  There is a subtotal for each zone type:  Residential, Commercial, Industrial, and Office.  Office subtotal is shown only if Green Cities DLC is active.
+
+The info may be viewed for the Entire City (default), for the part of the city with No District, or for a single district.  Entire City is always available.  No District is available only if there is at least one district.
+
+The info may be viewed as counts (default) or as percents.  All percents are relative to the Total counts row at the bottom.  Individual percents may not add up to total percents due to rounding.
+
+Industrial specialized zone types are always shown.  Specialized zone types available only thru a DLC package (Residential Self-Sufficient, Commercial Tourism, Commercial Leisure, Commercial Organic, and Office IT Cluster) are shown only if the DLC package is active.
+
+Districts and zones are shown while the Zones panel is displayed and no info view is shown and no tool is selected except that zones are now shown while the District drawing tool is selected.
+
+Zone types are grayed out where the necessary milestone is not yet reached.
+
+Unzoned squares can be included or excluded by clicking on the Include button next to Unzoned.  Excluding unzoned can be useful to view the percents for only the zoned squares.
+
+[h2]Counting Squares[/h2]
+A zoned square is counted as Built or Empty in the square's zone type and district specialization (if any).  The square's zone type is used regardless of the type of any building on the square.
+
+An unzoned square is counted as follows:[list]
+[*]If an unzoned square has no building on it, the square is counted as Empty in Unzoned.
+[*]If an unzoned square has a building that is a RICO zoned type (e.g. from Ploppable RICO or Industries DLC), the square is counted as Built in the building's zone type and specialization (if any).
+[*]If an unzoned square has any other building (e.g. service buildings, parks, and other structures/props that prevent zoning), the square is counted as Built in Unzoned.  Note that some buildings/structures cause underlying squares to be removed instead of unzoned.[/list]
+
+A building that is under construction, upgrading, abandoned, or collapsed is counted as Built.
+
+[h2]Performance[/h2]
+While the Zones panel is hidden, no zone information is collected, so there is no performance impact.
+
+Each time the Zones panel is displayed, zone information is collected immediately for all squares so that up-to-date information is shown.  This might cause a brief momentary pause in the simulation.
+
+While the Zones panel is displayed, zone information collection causes a slight reduction in the frame rate (FPS).  See my [url=https://steamcommunity.com/sharedfiles/filedetails/?id=1899449152]Game Day Timer[/url] mod to view your frame rate.  To minimize the performance impact, the data collection is spread out over 192 frames, which is every few seconds depending on your frame rate.  For example, at 32 FPS the Zones panel is updated every 6 seconds and at 64 FPS the Zones panel is updated every 3 seconds.
+
+[h1]Compatibility[/h1]
+This mod does not alter game save files in any way and can be safely disabled or unsubscribed at any time.
+
+This mod does not alter the game mechanics in any way.  This mod only displays information already in the game.
+
+This mod has been tested only on Windows but should work on Mac and Linux.
+
+This mod is compatible with [url=https://steamcommunity.com/sharedfiles/filedetails/?id=2016920607]Ploppable RICO Revisited[/url].
+
+This mod is compatible with all Down Loadable Content (DLC) packages thru Airports and all Content Creator Packs (CCP) thru Map Pack and Vehicles of the World.  This mod does not require any DLC or CCP to work properly.
+
+[h1]Source Code[/h1]
+Available [url=https://github.com/rcav8tr/ZoneInfo]here[/url].
+Change notes [url=https://steamcommunity.com/sharedfiles/filedetails/changelog/2497084396]here[/url].
+
+[h1]Acknowledgments[/h1]
+The development of this mod relied on the [url=https://steamcommunity.com/sharedfiles/filedetails/?id=450877484]ModTools[/url] mod by [url=https://steamcommunity.com/id/bloody_penguin/myworkshopfiles/?appid=255710]BloodyPenguin[/url] to view the internal workings of Cities Skylines.
