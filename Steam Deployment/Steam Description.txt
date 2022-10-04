@@ -1,6 +1,6 @@
 Display number of squares by zone type.
 
-[img=https://i.imgur.com/f2iRAPU.gif]
+[img=https://i.imgur.com/ys8eGPj.png]
 
 [h1]Detailed Description[/h1]
 A Zone Info button is added to the main screen.  To show the Zones panel, click the Zone Info button.  To hide the Zones panel, click the Zone Info button again or click the Close button.  The Zone Info button and Zones panel can be moved and the positions will be remembered between games.
@@ -11,7 +11,7 @@ The info may be viewed for the Entire City (default), for the part of the city w
 
 The info may be viewed as counts (default) or as percents.  All percents are relative to the Total counts row at the bottom.  Individual percents may not add up to total percents due to rounding.
 
-Industrial specialized zone types are always shown.  Specialized zone types available only thru a DLC package (Residential Self-Sufficient, Commercial Tourism, Commercial Leisure, Commercial Organic, and Office IT Cluster) are shown only if the DLC package is active.
+Industrial specialized zone types are always shown.  Specialized zone types available only thru a DLC package (Residential Self-Sufficient, Residential Wall-to-Wall, Commercial Tourism, Commercial Leisure, Commercial Organic, Commercial Wall-to-Wall, Office IT Cluster, and Office Wall-to-Wall) are shown only if the DLC package is active.
 
 Districts and zones are shown while the Zones panel is displayed and no info view is shown and no tool is selected except that zones are now shown while the District drawing tool is selected.
 
@@ -44,8 +44,6 @@ This mod does not alter the game mechanics in any way.  This mod only displays i
 This mod has been tested only on Windows but should work on Mac and Linux.
 
 This mod is compatible with [url=https://steamcommunity.com/sharedfiles/filedetails/?id=2016920607]Ploppable RICO Revisited[/url].
-
-This mod is compatible with all Down Loadable Content (DLC) packages thru Airports and all Content Creator Packs (CCP) thru Map Pack and Vehicles of the World.  This mod does not require any DLC or CCP to work properly.
 
 [h1]Source Code[/h1]
 Available [url=https://github.com/rcav8tr/ZoneInfo]here[/url].

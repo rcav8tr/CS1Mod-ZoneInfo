@@ -27,6 +27,7 @@ namespace ZoneInfo
             ResidentialGenericLow,
             ResidentialGenericHigh,
             ResidentialSelfSuff,
+            ResidentialWallToWall,
             ResidentialSubtotal,
 
             CommercialGenericLow,
@@ -34,6 +35,7 @@ namespace ZoneInfo
             CommercialTourism,
             CommercialLeisure,
             CommercialOrganic,
+            CommercialWallToWall,
             CommercialSubtotal,
 
             IndustrialGeneric,
@@ -45,6 +47,7 @@ namespace ZoneInfo
 
             OfficeGeneric,
             OfficeITCluster,
+            OfficelWallToWall,
             OfficeSubtotal,
 
             Unzoned,
@@ -59,14 +62,16 @@ namespace ZoneInfo
         /// </summary>
         private class SquareCount
         {
+            // get the maximum allowed districts based on the buffer size (or the constant if the buffer size is not available)
             // +1 to make room for entry for Entire City
-            private const int MaxDistricts = DistrictManager.MAX_DISTRICT_COUNT + 1;
+            private static readonly int maxDistricts = ((DistrictManager.exists && DistrictManager.instance.m_districts != null && DistrictManager.instance.m_districts.m_buffer != null) ?
+                DistrictManager.instance.m_districts.m_buffer.Length : DistrictManager.MAX_DISTRICT_COUNT) + 1;
 
             // the 3 counts for a data row
             // index into each array is district ID
-            public int[] built = new int[MaxDistricts];
-            public int[] empty = new int[MaxDistricts];
-            public int[] total = new int[MaxDistricts];
+            public int[] built = new int[maxDistricts];
+            public int[] empty = new int[maxDistricts];
+            public int[] total = new int[maxDistricts];
 
             /// <summary>
             /// increment the counts for the specified district and for the Entire City
@@ -95,7 +100,7 @@ namespace ZoneInfo
             /// </summary>
             public void Copy(SquareCount from)
             {
-                for (int districtID = 0; districtID < MaxDistricts; districtID++)
+                for (int districtID = 0; districtID < maxDistricts; districtID++)
                 {
                     built[districtID] = from.built[districtID];
                     empty[districtID] = from.empty[districtID];
@@ -108,7 +113,7 @@ namespace ZoneInfo
             /// </summary>
             public void Reset()
             {
-                for (int districtID = 0; districtID < MaxDistricts; districtID++)
+                for (int districtID = 0; districtID < maxDistricts; districtID++)
                 {
                     built[districtID] = 0;
                     empty[districtID] = 0;
@@ -270,44 +275,49 @@ namespace ZoneInfo
                 }
 
                 // get DLC flags
-                bool dlcBaseGame    = true;
-                bool dlcAfterDark   = SteamHelper.IsDLCOwned(SteamHelper.DLC.AfterDarkDLC);
-                bool dlcGreenCities = SteamHelper.IsDLCOwned(SteamHelper.DLC.GreenCitiesDLC);
-                
+                bool dlcBaseGame         = true;
+                bool dlcAfterDark        = SteamHelper.IsDLCOwned(SteamHelper.DLC.AfterDarkDLC);
+                bool dlcGreenCities      = SteamHelper.IsDLCOwned(SteamHelper.DLC.GreenCitiesDLC);
+                bool dlcPlazasPromenades = SteamHelper.IsDLCOwned(SteamHelper.DLC.PlazasAndPromenadesDLC);
+
                 // create each UI square count row based on DLC
                 top += 5f;
                 const float SectionSpacing = 10f;
-                if (dlcBaseGame   ) { if (!CreateUISquareCount(Zone.ResidentialGenericLow,  "ResidentialLow",      "Residential Low Density",  zoneAtlas, ref top)) return; }
-                if (dlcBaseGame   ) { if (!CreateUISquareCount(Zone.ResidentialGenericHigh, "ResidentialHigh",     "Residential High Density", zoneAtlas, ref top)) return; }
-                if (dlcGreenCities) { if (!CreateUISquareCount(Zone.ResidentialSelfSuff,    "ResidentialSelfSuff", "Residential Self-Suff",    zoneAtlas, ref top)) return; }
-                if (dlcBaseGame   ) { if (!CreateUISquareCount(Zone.ResidentialSubtotal,    "ResidentialSubTotal", "Residential Subtotal",     zoneAtlas, ref top)) return; }
+                if (dlcBaseGame        ) { if (!CreateUISquareCount(Zone.ResidentialGenericLow,  "ResidentialLow",        "Residential Low Density",  zoneAtlas, ref top)) return; }
+                if (dlcBaseGame        ) { if (!CreateUISquareCount(Zone.ResidentialGenericHigh, "ResidentialHigh",       "Residential High Density", zoneAtlas, ref top)) return; }
+                if (dlcGreenCities     ) { if (!CreateUISquareCount(Zone.ResidentialSelfSuff,    "ResidentialSelfSuff",   "Residential Self-Suff",    zoneAtlas, ref top)) return; }
+                if (dlcPlazasPromenades) { if (!CreateUISquareCount(Zone.ResidentialWallToWall,  "ResidentialWallToWall", "Residential Wall-to-Wall", zoneAtlas, ref top)) return; }
+                if (dlcBaseGame        ) { if (!CreateUISquareCount(Zone.ResidentialSubtotal,    "ResidentialSubTotal",   "Residential Subtotal",     zoneAtlas, ref top)) return; }
 
                 top += SectionSpacing;
-                if (dlcBaseGame   ) { if (!CreateUISquareCount(Zone.CommercialGenericLow,   "CommercialLow",       "Commercial Low Density",   zoneAtlas, ref top)) return; }
-                if (dlcBaseGame   ) { if (!CreateUISquareCount(Zone.CommercialGenericHigh,  "CommercialHigh",      "Commercial High Density",  zoneAtlas, ref top)) return; }
-                if (dlcAfterDark  ) { if (!CreateUISquareCount(Zone.CommercialTourism,      "CommercialTourism",   "Commercial Tourism",       zoneAtlas, ref top)) return; }
-                if (dlcAfterDark  ) { if (!CreateUISquareCount(Zone.CommercialLeisure,      "CommercialLeisure",   "Commercial Leisure",       zoneAtlas, ref top)) return; }
-                if (dlcGreenCities) { if (!CreateUISquareCount(Zone.CommercialOrganic,      "CommercialOrganic",   "Commercial Organic",       zoneAtlas, ref top)) return; }
-                if (dlcBaseGame   ) { if (!CreateUISquareCount(Zone.CommercialSubtotal,     "CommercialSubTotal",  "Commercial Subtotal",      zoneAtlas, ref top)) return; }
+                if (dlcBaseGame        ) { if (!CreateUISquareCount(Zone.CommercialGenericLow,   "CommercialLow",         "Commercial Low Density",   zoneAtlas, ref top)) return; }
+                if (dlcBaseGame        ) { if (!CreateUISquareCount(Zone.CommercialGenericHigh,  "CommercialHigh",        "Commercial High Density",  zoneAtlas, ref top)) return; }
+                if (dlcAfterDark       ) { if (!CreateUISquareCount(Zone.CommercialTourism,      "CommercialTourism",     "Commercial Tourism",       zoneAtlas, ref top)) return; }
+                if (dlcAfterDark       ) { if (!CreateUISquareCount(Zone.CommercialLeisure,      "CommercialLeisure",     "Commercial Leisure",       zoneAtlas, ref top)) return; }
+                if (dlcGreenCities     ) { if (!CreateUISquareCount(Zone.CommercialOrganic,      "CommercialOrganic",     "Commercial Organic",       zoneAtlas, ref top)) return; }
+                if (dlcPlazasPromenades) { if (!CreateUISquareCount(Zone.CommercialWallToWall,   "CommercialWallToWall",  "Commercial Wall-to-Wall",  zoneAtlas, ref top)) return; }
+                if (dlcBaseGame        ) { if (!CreateUISquareCount(Zone.CommercialSubtotal,     "CommercialSubTotal",    "Commercial Subtotal",      zoneAtlas, ref top)) return; }
 
                 top += SectionSpacing;
-                if (dlcBaseGame   ) { if (!CreateUISquareCount(Zone.IndustrialGeneric,      "IndustrialGeneric",   "Industrial Generic",       zoneAtlas, ref top)) return; }
-                if (dlcBaseGame   ) { if (!CreateUISquareCount(Zone.IndustrialForestry,     "IndustrialForestry",  "Industrial Forestry",      zoneAtlas, ref top)) return; }
-                if (dlcBaseGame   ) { if (!CreateUISquareCount(Zone.IndustrialFarming,      "IndustrialFarming",   "Industrial Farming",       zoneAtlas, ref top)) return; }
-                if (dlcBaseGame   ) { if (!CreateUISquareCount(Zone.IndustrialOre,          "IndustrialOre",       "Industrial Ore",           zoneAtlas, ref top)) return; }
-                if (dlcBaseGame   ) { if (!CreateUISquareCount(Zone.IndustrialOil,          "IndustrialOil",       "Industrial Oil",           zoneAtlas, ref top)) return; }
-                if (dlcBaseGame   ) { if (!CreateUISquareCount(Zone.IndustrialSubtotal,     "IndustrialSubTotal",  "Industrial Subtotal",      zoneAtlas, ref top)) return; }
+                if (dlcBaseGame        ) { if (!CreateUISquareCount(Zone.IndustrialGeneric,      "IndustrialGeneric",     "Industrial Generic",       zoneAtlas, ref top)) return; }
+                if (dlcBaseGame        ) { if (!CreateUISquareCount(Zone.IndustrialForestry,     "IndustrialForestry",    "Industrial Forestry",      zoneAtlas, ref top)) return; }
+                if (dlcBaseGame        ) { if (!CreateUISquareCount(Zone.IndustrialFarming,      "IndustrialFarming",     "Industrial Farming",       zoneAtlas, ref top)) return; }
+                if (dlcBaseGame        ) { if (!CreateUISquareCount(Zone.IndustrialOre,          "IndustrialOre",         "Industrial Ore",           zoneAtlas, ref top)) return; }
+                if (dlcBaseGame        ) { if (!CreateUISquareCount(Zone.IndustrialOil,          "IndustrialOil",         "Industrial Oil",           zoneAtlas, ref top)) return; }
+                if (dlcBaseGame        ) { if (!CreateUISquareCount(Zone.IndustrialSubtotal,     "IndustrialSubTotal",    "Industrial Subtotal",      zoneAtlas, ref top)) return; }
 
                 top += SectionSpacing;
-                if (dlcBaseGame   ) { if (!CreateUISquareCount(Zone.OfficeGeneric,          "OfficeGeneric",       "Office Generic",           zoneAtlas, ref top)) return; }
-                if (dlcGreenCities) { if (!CreateUISquareCount(Zone.OfficeITCluster,        "OfficeITCluster",     "Office IT Cluster",        zoneAtlas, ref top)) return; }
-                if (dlcGreenCities) { if (!CreateUISquareCount(Zone.OfficeSubtotal,         "OfficeSubTotal",      "Office Subtotal",          zoneAtlas, ref top)) return; }
+                if (dlcBaseGame        ) { if (!CreateUISquareCount(Zone.OfficeGeneric,          "OfficeGeneric",         "Office Generic",           zoneAtlas, ref top)) return; }
+                if (dlcGreenCities     ) { if (!CreateUISquareCount(Zone.OfficeITCluster,        "OfficeITCluster",       "Office IT Cluster",        zoneAtlas, ref top)) return; }
+                if (dlcPlazasPromenades) { if (!CreateUISquareCount(Zone.OfficelWallToWall,      "OfficeWallToWall",      "Office Wall-to-Wall",      zoneAtlas, ref top)) return; }
+                if (dlcGreenCities ||
+                    dlcPlazasPromenades) { if (!CreateUISquareCount(Zone.OfficeSubtotal,         "OfficeSubTotal",        "Office Subtotal",          zoneAtlas, ref top)) return; }
 
                 top += SectionSpacing;
-                if (dlcBaseGame   ) { if (!CreateUISquareCount(Zone.Unzoned,                "Unzoned",             "Unzoned",                  zoneAtlas, ref top)) return; }
+                if (dlcBaseGame        ) { if (!CreateUISquareCount(Zone.Unzoned,                "Unzoned",               "Unzoned",                  zoneAtlas, ref top)) return; }
 
                 top += SectionSpacing;
-                if (dlcBaseGame   ) { if (!CreateUISquareCount(Zone.Total,                  "Total",               "Total",                    zoneAtlas, ref top)) return; }
+                if (dlcBaseGame        ) { if (!CreateUISquareCount(Zone.Total,                  "Total",                 "Total",                    zoneAtlas, ref top)) return; }
 
                 // add the Include Unzoned checkbox, but hidden
                 if (!CreateCheckbox(ref _includeUnzonedCheckbox, ref _includeUnzonedLabel, "Include", _uiSquareCounts[(int)Zone.Unzoned], 110f, 60f)) return;
@@ -417,7 +427,7 @@ namespace ZoneInfo
         /// </summary>
         public static UITextureAtlas GetZoneAtlas()
         {
-            // load activation button texture from the DLL
+            // load zone image texture from the DLL
             int zoneImageCount = ZoneCount * 2;
             string resourceName = typeof(ZoneInfoPanel).Namespace + ".ZoneImages.png";
             Texture2D zoneImages = TextureUtil.GetDllResource(resourceName, zoneImageCount * 40, 40);
@@ -465,7 +475,7 @@ namespace ZoneInfo
         }
 
         /// <summary>
-        /// create a square count row in the specified SquareCountUI
+        /// create a square count row in the specified UISquareCount
         /// </summary>
         private bool CreateUISquareCount(UISquareCount uiSquareCount, string namePrefix, string text, ref float top)
         {
@@ -544,7 +554,7 @@ namespace ZoneInfo
             line.spriteName = "EmptySprite";
             line.color = TextColorNormal;
             line.isVisible = true;
-            
+
             // success
             return true;
         }
@@ -741,7 +751,7 @@ namespace ZoneInfo
                     instance.DistrictsVisible = false;
                 }
 
-                // show or hide zones 
+                // show or hide zones
                 if (currentInfoViewMode == InfoManager.InfoMode.None)
                 {
                     // no info mode, check tool type
@@ -841,19 +851,21 @@ namespace ZoneInfo
                                     {
                                         case ItemClass.Zone.ResidentialLow:
                                         case ItemClass.Zone.ResidentialHigh:
-                                            if      ((specialization & DistrictPolicies.Specialization.Selfsufficient) != 0) { countToIncrement = Zone.ResidentialSelfSuff;    }
-                                            else if (zone == ItemClass.Zone.ResidentialLow)                                  { countToIncrement = Zone.ResidentialGenericLow;  }
-                                            else if (zone == ItemClass.Zone.ResidentialHigh)                                 { countToIncrement = Zone.ResidentialGenericHigh; }
+                                            if      ((specialization & DistrictPolicies.Specialization.Selfsufficient       ) != 0) { countToIncrement = Zone.ResidentialSelfSuff;    }
+                                            else if ((specialization & DistrictPolicies.Specialization.ResidentialWallToWall) != 0) { countToIncrement = Zone.ResidentialWallToWall;  }
+                                            else if (zone == ItemClass.Zone.ResidentialLow)                                         { countToIncrement = Zone.ResidentialGenericLow;  }
+                                            else if (zone == ItemClass.Zone.ResidentialHigh)                                        { countToIncrement = Zone.ResidentialGenericHigh; }
                                             subtotalToIncrement = Zone.ResidentialSubtotal;
                                             break;
 
                                         case ItemClass.Zone.CommercialLow:
                                         case ItemClass.Zone.CommercialHigh:
-                                            if      ((specialization & DistrictPolicies.Specialization.Tourist) != 0) { countToIncrement = Zone.CommercialTourism;     }
-                                            else if ((specialization & DistrictPolicies.Specialization.Leisure) != 0) { countToIncrement = Zone.CommercialLeisure;     }
-                                            else if ((specialization & DistrictPolicies.Specialization.Organic) != 0) { countToIncrement = Zone.CommercialOrganic;     }
-                                            else if (zone == ItemClass.Zone.CommercialLow)                            { countToIncrement = Zone.CommercialGenericLow;  }
-                                            else if (zone == ItemClass.Zone.CommercialHigh)                           { countToIncrement = Zone.CommercialGenericHigh; }
+                                            if      ((specialization & DistrictPolicies.Specialization.Tourist             ) != 0) { countToIncrement = Zone.CommercialTourism;     }
+                                            else if ((specialization & DistrictPolicies.Specialization.Leisure             ) != 0) { countToIncrement = Zone.CommercialLeisure;     }
+                                            else if ((specialization & DistrictPolicies.Specialization.Organic             ) != 0) { countToIncrement = Zone.CommercialOrganic;     }
+                                            else if ((specialization & DistrictPolicies.Specialization.CommercialWallToWall) != 0) { countToIncrement = Zone.CommercialWallToWall;  }
+                                            else if (zone == ItemClass.Zone.CommercialLow)                                         { countToIncrement = Zone.CommercialGenericLow;  }
+                                            else if (zone == ItemClass.Zone.CommercialHigh)                                        { countToIncrement = Zone.CommercialGenericHigh; }
                                             subtotalToIncrement = Zone.CommercialSubtotal;
                                             break;
 
@@ -867,8 +879,9 @@ namespace ZoneInfo
                                             break;
 
                                         case ItemClass.Zone.Office:
-                                            if ((specialization & DistrictPolicies.Specialization.Hightech) != 0) { countToIncrement = Zone.OfficeITCluster; }
-                                            else                                                                  { countToIncrement = Zone.OfficeGeneric;   }
+                                            if      ((specialization & DistrictPolicies.Specialization.Hightech        ) != 0) { countToIncrement = Zone.OfficeITCluster;   }
+                                            else if ((specialization & DistrictPolicies.Specialization.OfficeWallToWall) != 0) { countToIncrement = Zone.OfficelWallToWall; }
+                                            else                                                                               { countToIncrement = Zone.OfficeGeneric;   }
                                             subtotalToIncrement = Zone.OfficeSubtotal;
                                             break;
 
@@ -910,28 +923,31 @@ namespace ZoneInfo
                                                     switch (buildingSubservice)
                                                     {
                                                         case ItemClass.SubService.ResidentialLowEco:
-                                                        case ItemClass.SubService.ResidentialHighEco:   countToIncrement = Zone.ResidentialSelfSuff;    subtotalToIncrement = Zone.ResidentialSubtotal; break;
-                                                        case ItemClass.SubService.ResidentialLow:       countToIncrement = Zone.ResidentialGenericLow;  subtotalToIncrement = Zone.ResidentialSubtotal; break;
-                                                        case ItemClass.SubService.ResidentialHigh:      countToIncrement = Zone.ResidentialGenericHigh; subtotalToIncrement = Zone.ResidentialSubtotal; break;
+                                                        case ItemClass.SubService.ResidentialHighEco:    countToIncrement = Zone.ResidentialSelfSuff;    subtotalToIncrement = Zone.ResidentialSubtotal; break;
+                                                        case ItemClass.SubService.ResidentialWallToWall: countToIncrement = Zone.ResidentialWallToWall;  subtotalToIncrement = Zone.ResidentialSubtotal; break;
+                                                        case ItemClass.SubService.ResidentialLow:        countToIncrement = Zone.ResidentialGenericLow;  subtotalToIncrement = Zone.ResidentialSubtotal; break;
+                                                        case ItemClass.SubService.ResidentialHigh:       countToIncrement = Zone.ResidentialGenericHigh; subtotalToIncrement = Zone.ResidentialSubtotal; break;
 
-                                                        case ItemClass.SubService.CommercialTourist:    countToIncrement = Zone.CommercialTourism;      subtotalToIncrement = Zone.CommercialSubtotal;  break;
-                                                        case ItemClass.SubService.CommercialLeisure:    countToIncrement = Zone.CommercialLeisure;      subtotalToIncrement = Zone.CommercialSubtotal;  break;
-                                                        case ItemClass.SubService.CommercialEco:        countToIncrement = Zone.CommercialOrganic;      subtotalToIncrement = Zone.CommercialSubtotal;  break;
-                                                        case ItemClass.SubService.CommercialLow:        countToIncrement = Zone.CommercialGenericLow;   subtotalToIncrement = Zone.CommercialSubtotal;  break;
-                                                        case ItemClass.SubService.CommercialHigh:       countToIncrement = Zone.CommercialGenericHigh;  subtotalToIncrement = Zone.CommercialSubtotal;  break;
+                                                        case ItemClass.SubService.CommercialTourist:     countToIncrement = Zone.CommercialTourism;      subtotalToIncrement = Zone.CommercialSubtotal;  break;
+                                                        case ItemClass.SubService.CommercialLeisure:     countToIncrement = Zone.CommercialLeisure;      subtotalToIncrement = Zone.CommercialSubtotal;  break;
+                                                        case ItemClass.SubService.CommercialEco:         countToIncrement = Zone.CommercialOrganic;      subtotalToIncrement = Zone.CommercialSubtotal;  break;
+                                                        case ItemClass.SubService.CommercialWallToWall:  countToIncrement = Zone.CommercialWallToWall;   subtotalToIncrement = Zone.CommercialSubtotal;  break;
+                                                        case ItemClass.SubService.CommercialLow:         countToIncrement = Zone.CommercialGenericLow;   subtotalToIncrement = Zone.CommercialSubtotal;  break;
+                                                        case ItemClass.SubService.CommercialHigh:        countToIncrement = Zone.CommercialGenericHigh;  subtotalToIncrement = Zone.CommercialSubtotal;  break;
 
                                                         case ItemClass.SubService.PlayerIndustryForestry:
-                                                        case ItemClass.SubService.IndustrialForestry:   countToIncrement = Zone.IndustrialForestry;     subtotalToIncrement = Zone.IndustrialSubtotal;  break;
+                                                        case ItemClass.SubService.IndustrialForestry:    countToIncrement = Zone.IndustrialForestry;     subtotalToIncrement = Zone.IndustrialSubtotal;  break;
                                                         case ItemClass.SubService.PlayerIndustryFarming:
-                                                        case ItemClass.SubService.IndustrialFarming:    countToIncrement = Zone.IndustrialFarming;      subtotalToIncrement = Zone.IndustrialSubtotal;  break;
+                                                        case ItemClass.SubService.IndustrialFarming:     countToIncrement = Zone.IndustrialFarming;      subtotalToIncrement = Zone.IndustrialSubtotal;  break;
                                                         case ItemClass.SubService.PlayerIndustryOre:
-                                                        case ItemClass.SubService.IndustrialOre:        countToIncrement = Zone.IndustrialOre;          subtotalToIncrement = Zone.IndustrialSubtotal;  break;
+                                                        case ItemClass.SubService.IndustrialOre:         countToIncrement = Zone.IndustrialOre;          subtotalToIncrement = Zone.IndustrialSubtotal;  break;
                                                         case ItemClass.SubService.PlayerIndustryOil:
-                                                        case ItemClass.SubService.IndustrialOil:        countToIncrement = Zone.IndustrialOil;          subtotalToIncrement = Zone.IndustrialSubtotal;  break;
-                                                        case ItemClass.SubService.IndustrialGeneric:    countToIncrement = Zone.IndustrialGeneric;      subtotalToIncrement = Zone.IndustrialSubtotal;  break;
+                                                        case ItemClass.SubService.IndustrialOil:         countToIncrement = Zone.IndustrialOil;          subtotalToIncrement = Zone.IndustrialSubtotal;  break;
+                                                        case ItemClass.SubService.IndustrialGeneric:     countToIncrement = Zone.IndustrialGeneric;      subtotalToIncrement = Zone.IndustrialSubtotal;  break;
 
-                                                        case ItemClass.SubService.OfficeHightech:       countToIncrement = Zone.OfficeITCluster;        subtotalToIncrement = Zone.OfficeSubtotal;      break;
-                                                        case ItemClass.SubService.OfficeGeneric:        countToIncrement = Zone.OfficeGeneric;          subtotalToIncrement = Zone.OfficeSubtotal;      break;
+                                                        case ItemClass.SubService.OfficeHightech:        countToIncrement = Zone.OfficeITCluster;        subtotalToIncrement = Zone.OfficeSubtotal;      break;
+                                                        case ItemClass.SubService.OfficeWallToWall:      countToIncrement = Zone.OfficelWallToWall;      subtotalToIncrement = Zone.OfficeSubtotal;      break;
+                                                        case ItemClass.SubService.OfficeGeneric:         countToIncrement = Zone.OfficeGeneric;          subtotalToIncrement = Zone.OfficeSubtotal;      break;
 
                                                         default:
                                                             // building is not a subservice being counted
@@ -1210,10 +1226,14 @@ namespace ZoneInfo
                             case Zone.ResidentialSelfSuff:
                                 showNormal = instance.Unlocked(DistrictPolicies.Policies.Selfsufficient);
                                 break;
+                            case Zone.ResidentialWallToWall:
+                                showNormal = instance.Unlocked(DistrictPolicies.Policies.ResidentialWallToWall);
+                                break;
                             case Zone.ResidentialSubtotal:
-                                showNormal = instance.Unlocked(ItemClass.Zone.ResidentialLow) || 
-                                             instance.Unlocked(ItemClass.Zone.ResidentialHigh) || 
-                                             instance.Unlocked(DistrictPolicies.Policies.Selfsufficient);
+                                showNormal = instance.Unlocked(ItemClass.Zone.ResidentialLow) ||
+                                             instance.Unlocked(ItemClass.Zone.ResidentialHigh) ||
+                                             instance.Unlocked(DistrictPolicies.Policies.Selfsufficient) ||
+                                             instance.Unlocked(DistrictPolicies.Policies.ResidentialWallToWall);
                                 break;
 
                             case Zone.CommercialGenericLow:
@@ -1231,12 +1251,16 @@ namespace ZoneInfo
                             case Zone.CommercialOrganic:
                                 showNormal = instance.Unlocked(DistrictPolicies.Policies.Organic);
                                 break;
+                            case Zone.CommercialWallToWall:
+                                showNormal = instance.Unlocked(DistrictPolicies.Policies.CommercialWallToWall);
+                                break;
                             case Zone.CommercialSubtotal:
                                 showNormal = instance.Unlocked(ItemClass.Zone.CommercialLow) ||
                                              instance.Unlocked(ItemClass.Zone.CommercialHigh) ||
                                              instance.Unlocked(DistrictPolicies.Policies.Tourist) ||
                                              instance.Unlocked(DistrictPolicies.Policies.Leisure) ||
-                                             instance.Unlocked(DistrictPolicies.Policies.Organic);
+                                             instance.Unlocked(DistrictPolicies.Policies.Organic) ||
+                                             instance.Unlocked(DistrictPolicies.Policies.CommercialWallToWall);
                                 break;
 
                             case Zone.IndustrialGeneric:
@@ -1268,9 +1292,13 @@ namespace ZoneInfo
                             case Zone.OfficeITCluster:
                                 showNormal = instance.Unlocked(DistrictPolicies.Policies.Hightech);
                                 break;
+                            case Zone.OfficelWallToWall:
+                                showNormal = instance.Unlocked(DistrictPolicies.Policies.OfficeWallToWall);
+                                break;
                             case Zone.OfficeSubtotal:
                                 showNormal = instance.Unlocked(ItemClass.Zone.Office) ||
-                                             instance.Unlocked(DistrictPolicies.Policies.Hightech);
+                                             instance.Unlocked(DistrictPolicies.Policies.Hightech) ||
+                                             instance.Unlocked(DistrictPolicies.Policies.OfficeWallToWall);
                                 break;
 
                             case Zone.Unzoned:

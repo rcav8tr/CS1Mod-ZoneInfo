@@ -144,11 +144,20 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Steam Deployment\PreviewImage.png" />
-    <None Include="Steam Deployment\ScreenCountExcludingUnzoned.jpg" />
-    <None Include="Steam Deployment\ScreenCountIncludingUnzoned.jpg" />
-    <None Include="Steam Deployment\ScreenPercentExcludingUnzoned.jpg" />
-    <None Include="Steam Deployment\ScreenPercentIncludingUnzoned.jpg" />
     <None Include="Steam Deployment\Steam Description.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ZoneImages\Adjusted\CommercialWallToWallLocked.png" />
+    <None Include="ZoneImages\Adjusted\OfficelWallToWallLocked.png" />
+    <None Include="ZoneImages\Adjusted\OfficelWallToWallNormal.png" />
+    <None Include="ZoneImages\Adjusted\ResidentialWallToWallNormal.png" />
+    <None Include="ZoneImages\Original\DistrictSpecializationCommercialWallToWall.png" />
+    <None Include="ZoneImages\Original\DistrictSpecializationOfficeWallToWall.png" />
+    <None Include="ZoneImages\Original\DistrictSpecializationResidentialWallToWall.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Steam Deployment\ScreenCount.jpg" />
+    <None Include="Steam Deployment\ScreenPercent.jpg" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
