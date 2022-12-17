@@ -159,6 +159,13 @@
     <None Include="Steam Deployment\ScreenCount.jpg" />
     <None Include="Steam Deployment\ScreenPercent.jpg" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="ZoneImages\Original\DistrictSpecializationOfficeFinancial.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ZoneImages\Adjusted\OfficeFinancialLocked.png" />
+    <None Include="ZoneImages\Adjusted\OfficeFinancialNormal.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>mkdir "%25LOCALAPPDATA%25\Colossal Order\Cities_Skylines\Addons\Mods\$(SolutionName)"

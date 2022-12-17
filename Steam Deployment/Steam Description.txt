@@ -1,17 +1,17 @@
 Display number of squares by zone type.
 
-[img=https://i.imgur.com/sgP8i4s.png]
+[img=https://i.imgur.com/O3ujMsj.png]
 
 [h1]Detailed Description[/h1]
 A Zone Info button is added to the main screen.  To show the Zones panel, click the Zone Info button.  To hide the Zones panel, click the Zone Info button again or click the Close button.  The Zone Info button and Zones panel can be moved and the positions will be remembered between games.
 
-The Zones panel shows the squares built, empty, and total for each zone type.  There is a subtotal for each zone type:  Residential, Commercial, Industrial, and Office.  Office subtotal is shown only if Green Cities DLC is active.
+The Zones panel shows the squares built, empty, and total for each zone type.  There is a subtotal for each zone type:  Residential, Commercial, Industrial, and Office.  Office subtotal is shown only if at least one of the corresponding DLCs is active.
 
 The info may be viewed for the Entire City (default), for the part of the city with No District, or for a single district.  Entire City is always available.  No District is available only if there is at least one district.
 
 The info may be viewed as counts (default) or as percents.  All percents are relative to the Total counts row at the bottom.  Individual percents may not add up to total percents due to rounding.
 
-Industrial specialized zone types are always shown.  Specialized zone types available only thru a DLC package (Residential Self-Sufficient, Residential Wall-to-Wall, Commercial Tourism, Commercial Leisure, Commercial Organic, Commercial Wall-to-Wall, Office IT Cluster, and Office Wall-to-Wall) are shown only if the DLC package is active.
+Industrial specialized zone types are always shown.  Specialized zone types available only thru a DLC package (Residential Self-Sufficient, Residential Wall-to-Wall, Commercial Tourism, Commercial Leisure, Commercial Organic, Commercial Wall-to-Wall, Office IT Cluster, Office Wall-to-Wall, and Office Financial) are shown only if the DLC package is active.
 
 Districts and zones are shown while the Zones panel is displayed and no info view is shown and no tool is selected except that zones are now shown while the District drawing tool is selected.
 

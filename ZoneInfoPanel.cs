@@ -48,6 +48,7 @@ namespace ZoneInfo
             OfficeGeneric,
             OfficeITCluster,
             OfficelWallToWall,
+            OfficeFinancial,
             OfficeSubtotal,
 
             Unzoned,
@@ -275,49 +276,52 @@ namespace ZoneInfo
                 }
 
                 // get DLC flags
-                bool dlcBaseGame         = true;
-                bool dlcAfterDark        = SteamHelper.IsDLCOwned(SteamHelper.DLC.AfterDarkDLC);
-                bool dlcGreenCities      = SteamHelper.IsDLCOwned(SteamHelper.DLC.GreenCitiesDLC);
-                bool dlcPlazasPromenades = SteamHelper.IsDLCOwned(SteamHelper.DLC.PlazasAndPromenadesDLC);
+                bool dlcBaseGame           = true;
+                bool dlcAfterDark          = SteamHelper.IsDLCOwned(SteamHelper.DLC.AfterDarkDLC);
+                bool dlcGreenCities        = SteamHelper.IsDLCOwned(SteamHelper.DLC.GreenCitiesDLC);
+                bool dlcPlazasPromenades   = SteamHelper.IsDLCOwned(SteamHelper.DLC.PlazasAndPromenadesDLC);
+                bool dlcFinancialDistricts = SteamHelper.IsDLCOwned(SteamHelper.DLC.FinancialDistrictsDLC);
 
                 // create each UI square count row based on DLC
                 top += 5f;
                 const float SectionSpacing = 10f;
-                if (dlcBaseGame        ) { if (!CreateUISquareCount(Zone.ResidentialGenericLow,  "ResidentialLow",        "Residential Low Density",  zoneAtlas, ref top)) return; }
-                if (dlcBaseGame        ) { if (!CreateUISquareCount(Zone.ResidentialGenericHigh, "ResidentialHigh",       "Residential High Density", zoneAtlas, ref top)) return; }
-                if (dlcGreenCities     ) { if (!CreateUISquareCount(Zone.ResidentialSelfSuff,    "ResidentialSelfSuff",   "Residential Self-Suff",    zoneAtlas, ref top)) return; }
-                if (dlcPlazasPromenades) { if (!CreateUISquareCount(Zone.ResidentialWallToWall,  "ResidentialWallToWall", "Residential Wall-to-Wall", zoneAtlas, ref top)) return; }
-                if (dlcBaseGame        ) { if (!CreateUISquareCount(Zone.ResidentialSubtotal,    "ResidentialSubTotal",   "Residential Subtotal",     zoneAtlas, ref top)) return; }
+                if (dlcBaseGame          ) { if (!CreateUISquareCount(Zone.ResidentialGenericLow,  "ResidentialLow",        "Residential Low Density",  zoneAtlas, ref top)) return; }
+                if (dlcBaseGame          ) { if (!CreateUISquareCount(Zone.ResidentialGenericHigh, "ResidentialHigh",       "Residential High Density", zoneAtlas, ref top)) return; }
+                if (dlcGreenCities       ) { if (!CreateUISquareCount(Zone.ResidentialSelfSuff,    "ResidentialSelfSuff",   "Residential Self-Suff",    zoneAtlas, ref top)) return; }
+                if (dlcPlazasPromenades  ) { if (!CreateUISquareCount(Zone.ResidentialWallToWall,  "ResidentialWallToWall", "Residential Wall-to-Wall", zoneAtlas, ref top)) return; }
+                if (dlcBaseGame          ) { if (!CreateUISquareCount(Zone.ResidentialSubtotal,    "ResidentialSubTotal",   "Residential Subtotal",     zoneAtlas, ref top)) return; }
 
                 top += SectionSpacing;
-                if (dlcBaseGame        ) { if (!CreateUISquareCount(Zone.CommercialGenericLow,   "CommercialLow",         "Commercial Low Density",   zoneAtlas, ref top)) return; }
-                if (dlcBaseGame        ) { if (!CreateUISquareCount(Zone.CommercialGenericHigh,  "CommercialHigh",        "Commercial High Density",  zoneAtlas, ref top)) return; }
-                if (dlcAfterDark       ) { if (!CreateUISquareCount(Zone.CommercialTourism,      "CommercialTourism",     "Commercial Tourism",       zoneAtlas, ref top)) return; }
-                if (dlcAfterDark       ) { if (!CreateUISquareCount(Zone.CommercialLeisure,      "CommercialLeisure",     "Commercial Leisure",       zoneAtlas, ref top)) return; }
-                if (dlcGreenCities     ) { if (!CreateUISquareCount(Zone.CommercialOrganic,      "CommercialOrganic",     "Commercial Organic",       zoneAtlas, ref top)) return; }
-                if (dlcPlazasPromenades) { if (!CreateUISquareCount(Zone.CommercialWallToWall,   "CommercialWallToWall",  "Commercial Wall-to-Wall",  zoneAtlas, ref top)) return; }
-                if (dlcBaseGame        ) { if (!CreateUISquareCount(Zone.CommercialSubtotal,     "CommercialSubTotal",    "Commercial Subtotal",      zoneAtlas, ref top)) return; }
+                if (dlcBaseGame          ) { if (!CreateUISquareCount(Zone.CommercialGenericLow,   "CommercialLow",         "Commercial Low Density",   zoneAtlas, ref top)) return; }
+                if (dlcBaseGame          ) { if (!CreateUISquareCount(Zone.CommercialGenericHigh,  "CommercialHigh",        "Commercial High Density",  zoneAtlas, ref top)) return; }
+                if (dlcAfterDark         ) { if (!CreateUISquareCount(Zone.CommercialTourism,      "CommercialTourism",     "Commercial Tourism",       zoneAtlas, ref top)) return; }
+                if (dlcAfterDark         ) { if (!CreateUISquareCount(Zone.CommercialLeisure,      "CommercialLeisure",     "Commercial Leisure",       zoneAtlas, ref top)) return; }
+                if (dlcGreenCities       ) { if (!CreateUISquareCount(Zone.CommercialOrganic,      "CommercialOrganic",     "Commercial Organic",       zoneAtlas, ref top)) return; }
+                if (dlcPlazasPromenades  ) { if (!CreateUISquareCount(Zone.CommercialWallToWall,   "CommercialWallToWall",  "Commercial Wall-to-Wall",  zoneAtlas, ref top)) return; }
+                if (dlcBaseGame          ) { if (!CreateUISquareCount(Zone.CommercialSubtotal,     "CommercialSubTotal",    "Commercial Subtotal",      zoneAtlas, ref top)) return; }
 
                 top += SectionSpacing;
-                if (dlcBaseGame        ) { if (!CreateUISquareCount(Zone.IndustrialGeneric,      "IndustrialGeneric",     "Industrial Generic",       zoneAtlas, ref top)) return; }
-                if (dlcBaseGame        ) { if (!CreateUISquareCount(Zone.IndustrialForestry,     "IndustrialForestry",    "Industrial Forestry",      zoneAtlas, ref top)) return; }
-                if (dlcBaseGame        ) { if (!CreateUISquareCount(Zone.IndustrialFarming,      "IndustrialFarming",     "Industrial Farming",       zoneAtlas, ref top)) return; }
-                if (dlcBaseGame        ) { if (!CreateUISquareCount(Zone.IndustrialOre,          "IndustrialOre",         "Industrial Ore",           zoneAtlas, ref top)) return; }
-                if (dlcBaseGame        ) { if (!CreateUISquareCount(Zone.IndustrialOil,          "IndustrialOil",         "Industrial Oil",           zoneAtlas, ref top)) return; }
-                if (dlcBaseGame        ) { if (!CreateUISquareCount(Zone.IndustrialSubtotal,     "IndustrialSubTotal",    "Industrial Subtotal",      zoneAtlas, ref top)) return; }
+                if (dlcBaseGame          ) { if (!CreateUISquareCount(Zone.IndustrialGeneric,      "IndustrialGeneric",     "Industrial Generic",       zoneAtlas, ref top)) return; }
+                if (dlcBaseGame          ) { if (!CreateUISquareCount(Zone.IndustrialForestry,     "IndustrialForestry",    "Industrial Forestry",      zoneAtlas, ref top)) return; }
+                if (dlcBaseGame          ) { if (!CreateUISquareCount(Zone.IndustrialFarming,      "IndustrialFarming",     "Industrial Farming",       zoneAtlas, ref top)) return; }
+                if (dlcBaseGame          ) { if (!CreateUISquareCount(Zone.IndustrialOre,          "IndustrialOre",         "Industrial Ore",           zoneAtlas, ref top)) return; }
+                if (dlcBaseGame          ) { if (!CreateUISquareCount(Zone.IndustrialOil,          "IndustrialOil",         "Industrial Oil",           zoneAtlas, ref top)) return; }
+                if (dlcBaseGame          ) { if (!CreateUISquareCount(Zone.IndustrialSubtotal,     "IndustrialSubTotal",    "Industrial Subtotal",      zoneAtlas, ref top)) return; }
 
                 top += SectionSpacing;
-                if (dlcBaseGame        ) { if (!CreateUISquareCount(Zone.OfficeGeneric,          "OfficeGeneric",         "Office Generic",           zoneAtlas, ref top)) return; }
-                if (dlcGreenCities     ) { if (!CreateUISquareCount(Zone.OfficeITCluster,        "OfficeITCluster",       "Office IT Cluster",        zoneAtlas, ref top)) return; }
-                if (dlcPlazasPromenades) { if (!CreateUISquareCount(Zone.OfficelWallToWall,      "OfficeWallToWall",      "Office Wall-to-Wall",      zoneAtlas, ref top)) return; }
+                if (dlcBaseGame          ) { if (!CreateUISquareCount(Zone.OfficeGeneric,          "OfficeGeneric",         "Office Generic",           zoneAtlas, ref top)) return; }
+                if (dlcGreenCities       ) { if (!CreateUISquareCount(Zone.OfficeITCluster,        "OfficeITCluster",       "Office IT Cluster",        zoneAtlas, ref top)) return; }
+                if (dlcPlazasPromenades  ) { if (!CreateUISquareCount(Zone.OfficelWallToWall,      "OfficeWallToWall",      "Office Wall-to-Wall",      zoneAtlas, ref top)) return; }
+                if (dlcFinancialDistricts) { if (!CreateUISquareCount(Zone.OfficeFinancial,        "OfficeFinancial",       "Office Financial",         zoneAtlas, ref top)) return; }
                 if (dlcGreenCities ||
-                    dlcPlazasPromenades) { if (!CreateUISquareCount(Zone.OfficeSubtotal,         "OfficeSubTotal",        "Office Subtotal",          zoneAtlas, ref top)) return; }
+                    dlcPlazasPromenades ||
+                    dlcFinancialDistricts) { if (!CreateUISquareCount(Zone.OfficeSubtotal,         "OfficeSubTotal",        "Office Subtotal",          zoneAtlas, ref top)) return; }
 
                 top += SectionSpacing;
-                if (dlcBaseGame        ) { if (!CreateUISquareCount(Zone.Unzoned,                "Unzoned",               "Unzoned",                  zoneAtlas, ref top)) return; }
+                if (dlcBaseGame          ) { if (!CreateUISquareCount(Zone.Unzoned,                "Unzoned",               "Unzoned",                  zoneAtlas, ref top)) return; }
 
                 top += SectionSpacing;
-                if (dlcBaseGame        ) { if (!CreateUISquareCount(Zone.Total,                  "Total",                 "Total",                    zoneAtlas, ref top)) return; }
+                if (dlcBaseGame          ) { if (!CreateUISquareCount(Zone.Total,                  "Total",                 "Total",                    zoneAtlas, ref top)) return; }
 
                 // add the Include Unzoned checkbox, but hidden
                 if (!CreateCheckbox(ref _includeUnzonedCheckbox, ref _includeUnzonedLabel, "Include", _uiSquareCounts[(int)Zone.Unzoned], 110f, 60f)) return;
@@ -881,7 +885,8 @@ namespace ZoneInfo
                                         case ItemClass.Zone.Office:
                                             if      ((specialization & DistrictPolicies.Specialization.Hightech        ) != 0) { countToIncrement = Zone.OfficeITCluster;   }
                                             else if ((specialization & DistrictPolicies.Specialization.OfficeWallToWall) != 0) { countToIncrement = Zone.OfficelWallToWall; }
-                                            else                                                                               { countToIncrement = Zone.OfficeGeneric;   }
+                                            else if ((specialization & DistrictPolicies.Specialization.Financial       ) != 0) { countToIncrement = Zone.OfficeFinancial;   }
+                                            else                                                                               { countToIncrement = Zone.OfficeGeneric;     }
                                             subtotalToIncrement = Zone.OfficeSubtotal;
                                             break;
 
@@ -947,6 +952,7 @@ namespace ZoneInfo
 
                                                         case ItemClass.SubService.OfficeHightech:        countToIncrement = Zone.OfficeITCluster;        subtotalToIncrement = Zone.OfficeSubtotal;      break;
                                                         case ItemClass.SubService.OfficeWallToWall:      countToIncrement = Zone.OfficelWallToWall;      subtotalToIncrement = Zone.OfficeSubtotal;      break;
+                                                        case ItemClass.SubService.OfficeFinancial:       countToIncrement = Zone.OfficeFinancial;        subtotalToIncrement = Zone.OfficeSubtotal;      break;
                                                         case ItemClass.SubService.OfficeGeneric:         countToIncrement = Zone.OfficeGeneric;          subtotalToIncrement = Zone.OfficeSubtotal;      break;
 
                                                         default:
@@ -1295,10 +1301,14 @@ namespace ZoneInfo
                             case Zone.OfficelWallToWall:
                                 showNormal = instance.Unlocked(DistrictPolicies.Policies.OfficeWallToWall);
                                 break;
+                            case Zone.OfficeFinancial:
+                                showNormal = instance.Unlocked(DistrictPolicies.Policies.Financial);
+                                break;
                             case Zone.OfficeSubtotal:
                                 showNormal = instance.Unlocked(ItemClass.Zone.Office) ||
                                              instance.Unlocked(DistrictPolicies.Policies.Hightech) ||
-                                             instance.Unlocked(DistrictPolicies.Policies.OfficeWallToWall);
+                                             instance.Unlocked(DistrictPolicies.Policies.OfficeWallToWall) ||
+                                             instance.Unlocked(DistrictPolicies.Policies.Financial);
                                 break;
 
                             case Zone.Unzoned:
