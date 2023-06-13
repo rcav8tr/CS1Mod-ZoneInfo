@@ -1,6 +1,6 @@
 Display number of squares by zone type.
 
-[img=https://i.imgur.com/a0VrMRr.png]
+[img=https://i.imgur.com/0O9w9Ta.png]
 
 [h1]Detailed Description[/h1]
 A Zone Info button is added to the main screen.  To show the Zones panel, click the Zone Info button.  To hide the Zones panel, click the Zone Info button again or click the Close button.  The Zone Info button and Zones panel can be moved and the positions will be remembered between games.
