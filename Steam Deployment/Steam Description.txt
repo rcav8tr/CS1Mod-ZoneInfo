@@ -46,7 +46,7 @@ This mod has been tested only on Windows but should work on Mac and Linux.
 This mod is compatible with [url=https://steamcommunity.com/sharedfiles/filedetails/?id=2016920607]Ploppable RICO Revisited[/url].
 
 [h1]Source Code[/h1]
-Available [url=https://gitlab.com/rcav8tr1/citiesskylinesmods/ZoneInfo]here[/url].
+Available [url=https://github.com/rcav8tr/CS1-ZoneInfo]here[/url].
 Change notes [url=https://steamcommunity.com/sharedfiles/filedetails/changelog/2497084396]here[/url].
 
 [h1]Acknowledgments[/h1]
