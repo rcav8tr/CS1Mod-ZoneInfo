@@ -76,9 +76,13 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="ZoneImages\Original\DistrictSpecializationCommercialNone.png" />
+    <None Include="ZoneImages\Original\DistrictSpecializationCommercialWallToWall.png" />
     <None Include="ZoneImages\Original\DistrictSpecializationNone.png" />
     <None Include="ZoneImages\Original\DistrictSpecializationOfficeNone.png" />
+    <None Include="ZoneImages\Original\DistrictSpecializationOfficeFinancial.png" />
+    <None Include="ZoneImages\Original\DistrictSpecializationOfficeWallToWall.png" />
     <None Include="ZoneImages\Original\DistrictSpecializationResidentialNone.png" />
+    <None Include="ZoneImages\Original\DistrictSpecializationResidentialWallToWall.png" />
     <None Include="ZoneImages\Original\IconPolicyFarming.png" />
     <None Include="ZoneImages\Original\IconPolicyForest.png" />
     <None Include="ZoneImages\Original\IconPolicyHightech.png" />
@@ -111,6 +115,8 @@
     <None Include="ZoneImages\Adjusted\CommercialSubtotalNormal.png" />
     <None Include="ZoneImages\Adjusted\CommercialTourismLocked.png" />
     <None Include="ZoneImages\Adjusted\CommercialTourismNormal.png" />
+    <None Include="ZoneImages\Adjusted\CommercialWallToWallLocked.png" />
+    <None Include="ZoneImages\Adjusted\CommercialWallToWallNormal.png" />
     <None Include="ZoneImages\Adjusted\IndustrialFarmingLocked.png" />
     <None Include="ZoneImages\Adjusted\IndustrialFarmingNormal.png" />
     <None Include="ZoneImages\Adjusted\IndustrialForestryLocked.png" />
@@ -123,12 +129,16 @@
     <None Include="ZoneImages\Adjusted\IndustrialOreNormal.png" />
     <None Include="ZoneImages\Adjusted\IndustrialSubtotalLocked.png" />
     <None Include="ZoneImages\Adjusted\IndustrialSubtotalNormal.png" />
+    <None Include="ZoneImages\Adjusted\OfficeFinancialLocked.png" />
+    <None Include="ZoneImages\Adjusted\OfficeFinancialNormal.png" />
     <None Include="ZoneImages\Adjusted\OfficeGenericLocked.png" />
     <None Include="ZoneImages\Adjusted\OfficeGenericNormal.png" />
     <None Include="ZoneImages\Adjusted\OfficeITClusterLocked.png" />
     <None Include="ZoneImages\Adjusted\OfficeITClusterNormal.png" />
     <None Include="ZoneImages\Adjusted\OfficeSubtotalLocked.png" />
     <None Include="ZoneImages\Adjusted\OfficeSubtotalNormal.png" />
+    <None Include="ZoneImages\Adjusted\OfficelWallToWallLocked.png" />
+    <None Include="ZoneImages\Adjusted\OfficelWallToWallNormal.png" />
     <None Include="ZoneImages\Adjusted\ResidentialGenericHighLocked.png" />
     <None Include="ZoneImages\Adjusted\ResidentialGenericHighNormal.png" />
     <None Include="ZoneImages\Adjusted\ResidentialGenericLowLocked.png" />
@@ -137,6 +147,8 @@
     <None Include="ZoneImages\Adjusted\ResidentialSelfSuffNormal.png" />
     <None Include="ZoneImages\Adjusted\ResidentialSubtotalLocked.png" />
     <None Include="ZoneImages\Adjusted\ResidentialSubtotalNormal.png" />
+    <None Include="ZoneImages\Adjusted\ResidentialWallToWallLocked.png" />
+    <None Include="ZoneImages\Adjusted\ResidentialWallToWallNormal.png" />
     <None Include="ZoneImages\Adjusted\TotalLocked.png" />
     <None Include="ZoneImages\Adjusted\TotalNormal.png" />
     <None Include="ZoneImages\Adjusted\UnzonedLocked.png" />
@@ -144,27 +156,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Steam Deployment\PreviewImage.png" />
-    <None Include="Steam Deployment\Steam Description.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="ZoneImages\Adjusted\CommercialWallToWallLocked.png" />
-    <None Include="ZoneImages\Adjusted\OfficelWallToWallLocked.png" />
-    <None Include="ZoneImages\Adjusted\OfficelWallToWallNormal.png" />
-    <None Include="ZoneImages\Adjusted\ResidentialWallToWallNormal.png" />
-    <None Include="ZoneImages\Original\DistrictSpecializationCommercialWallToWall.png" />
-    <None Include="ZoneImages\Original\DistrictSpecializationOfficeWallToWall.png" />
-    <None Include="ZoneImages\Original\DistrictSpecializationResidentialWallToWall.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Steam Deployment\ScreenCount.jpg" />
     <None Include="Steam Deployment\ScreenPercent.jpg" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="ZoneImages\Original\DistrictSpecializationOfficeFinancial.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="ZoneImages\Adjusted\OfficeFinancialLocked.png" />
-    <None Include="ZoneImages\Adjusted\OfficeFinancialNormal.png" />
+    <None Include="Steam Deployment\Steam Description.txt" />
+    <None Include="LICENSE.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
